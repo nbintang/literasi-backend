@@ -9,5 +9,6 @@ export async function getUsers(req: Request, res: Response) {
 export async function getUserById(req: Request, res: Response) {
   const { id } = req.params;
   const user = await findUserById(Number(id));
-  res.status(200).json(user);
+  res.status(200).json({ success: true, data: user });
 }
+
