@@ -59,8 +59,8 @@ exports.postBooks = [
                 author,
                 category,
                 content,
-                price,
-                stock,
+                price: Number(price),
+                stock: Number(stock),
             });
             res.status(200).json({ success: true, data: book });
         }

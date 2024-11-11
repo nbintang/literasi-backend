@@ -13,23 +13,30 @@ const findBooksByCategory = async (name, page) => await db_1.db.category.findFir
     skip: (page - 1) * 10,
 });
 exports.findBooksByCategory = findBooksByCategory;
-const createBook = async ({ title, description, imageUrl, price, content, stock, author, category, }) => await db_1.db.book.create({
-    data: {
-        title,
-        description,
-        imageUrl,
-        price,
-        stock,
-        content,
-        author: { create: { name: author } },
-        category: {
-            connectOrCreate: {
-                where: { name: category },
-                create: { name: category },
+const createBook = async ({ title, description, imageUrl, price, content, stock, author, category, }) => {
+    return await db_1.db.book.create({
+        data: {
+            title,
+            description,
+            imageUrl,
+            price,
+            stock,
+            content,
+            author: {
+                connectOrCreate: {
+                    where: { name: author },
+                    create: { name: author },
+                },
+            },
+            category: {
+                connectOrCreate: {
+                    where: { name: category },
+                    create: { name: category },
+                },
             },
         },
-    },
-});
+    });
+};
 exports.createBook = createBook;
 const updateBook = async (id, { title, description, imageUrl, price, content, author, stock, category, }) => await db_1.db.book.update({
     where: { id },

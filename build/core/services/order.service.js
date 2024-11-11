@@ -11,7 +11,6 @@ async function getOrderByUserId(req, res) {
     res.status(200).json({ success: true, data: order });
 }
 async function postOrder(req, res) {
-    console.log("Request Body:", req.body);
     const items = req.body.items;
     if (!items || !Array.isArray(items)) {
         return res.status(400).json({ message: "Invalid order items" });

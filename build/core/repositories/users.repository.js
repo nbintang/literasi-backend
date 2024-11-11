@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findUserByEmail = exports.createUser = exports.findUserById = exports.findUsers = void 0;
 const db_1 = require("../../lib/db");
-const findUsers = async () => await db_1.db.user.findMany({ where: { role: "USER" } });
+const findUsers = async () => await db_1.db.user.findMany({ where: { role: "USER" }, });
 exports.findUsers = findUsers;
 const findUserById = async (id) => await db_1.db.user.findUnique({ where: { id }, include: { orders: true } });
 exports.findUserById = findUserById;
