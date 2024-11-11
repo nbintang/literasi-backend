@@ -40,7 +40,7 @@ export async function signIn(req: Request, res: Response) {
       sameSite: "lax",
       secure: true,
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
     });
     res.status(200).json({
       success: true,
@@ -66,16 +66,20 @@ export async function refreshAccessToken(
   }
 
   try {
+    // Verify and decode the refresh token
     const decode = (await verifyToken(refreshToken)) as CustomJwtPayload;
+
+    // Generate new access token
     const accessToken = await generateAccessToken({
       id: decode.id.toString(),
-      time: "15s",
       role: decode.role,
     });
+
     res.status(200).json({ success: true, accessToken });
   } catch (error) {
+    // Clear the refresh token if invalid
     res.clearCookie("refreshToken");
-    handleErrorResponse(res, error as Error);
+    return handleErrorResponse(res, error as Error, 401);
   }
 }
 
