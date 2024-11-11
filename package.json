@@ -11,7 +11,8 @@
     "db:push": "npx prisma db push  && npx prisma generate",
     "db:seed": "ts-node --transpile-only prisma/seed.ts",
     "db:reset": "npx prisma migrate reset",
-    "db:generate": "npx prisma generate"
+    "db:generate": "npx prisma generate",
+        "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
