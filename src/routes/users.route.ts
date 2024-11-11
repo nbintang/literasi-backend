@@ -1,8 +1,8 @@
-import route from "../lib/router";
+const route = require("express").Router();
+import { getOrderByUserId, postOrder } from "../core/services/order.service";
 import { getUserById, getUsers } from "../core/services/user.service";
-import { authMiddleware } from "../middleware";
-
-route.get("/users", authMiddleware, getUsers);
-route.get("/users/:id", authMiddleware, getUserById);
-
+route.get("/", getUsers);
+route.get("/:id", getUserById);
+route.get("/:id/orders", getOrderByUserId);
+route.post("/orders", postOrder);
 export { route as userRoute };

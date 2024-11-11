@@ -5,7 +5,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
   verifyToken,
-} from "../../helper/jwt";
+} from "../../lib/jwt";
 import { CustomJwtPayload, RequestWithToken } from "../../types";
 import { handleErrorResponse } from "../../helper/error-response";
 
@@ -20,36 +20,38 @@ export async function signUp(req: Request, res: Response) {
   }
 }
 
-
 export async function signIn(req: Request, res: Response) {
   const { email, password } = req.body;
   try {
     const userExisted = await findUserByEmail(email);
     if (!userExisted) {
-      res.status(404).json({ message: "User not found" });
-      return;
+      const error = new Error("User not found");
+      return handleErrorResponse(res, error, 404);
     }
     const isPwValid = await bcrypt.compare(password, userExisted.password);
     if (!isPwValid) {
-      res.status(401).json({ message: "Invalid password" });
-      return;
+      const error = new Error("Invalid password");
+      return handleErrorResponse(res, error, 401);
     }
-    const accessToken = await generateAccessToken({ id: userExisted.id.toString() });
-    const refreshToken = await generateRefreshToken({ id: userExisted.toString()});
+    const id = userExisted.id.toString();
+    const accessToken = await generateAccessToken({ id, role: userExisted.role });
+    const refreshToken = await generateRefreshToken({ id, role: userExisted.role });
     res.cookie("refreshToken", refreshToken, {
       sameSite: "lax",
       secure: true,
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
     });
-    res
-      .status(200)
-      .json({ success: true, message: "Welcome!...", accessToken, refreshToken });
+    res.status(200).json({
+      success: true,
+      message: "Welcome!...",
+      accessToken,
+      refreshToken,
+    });
   } catch (error) {
     handleErrorResponse(res, error as Error);
   }
 }
-
 
 export async function refreshAccessToken(
   req: RequestWithToken,
@@ -59,8 +61,8 @@ export async function refreshAccessToken(
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
-    res.status(401).json({ message: "Refresh token not found" });
-    return;
+    const error = new Error("Refresh token not found");
+    return handleErrorResponse(res, error, 404);
   }
 
   try {
@@ -68,6 +70,7 @@ export async function refreshAccessToken(
     const accessToken = await generateAccessToken({
       id: decode.id.toString(),
       time: "15s",
+      role: decode.role,
     });
     res.status(200).json({ success: true, accessToken });
   } catch (error) {
@@ -76,12 +79,11 @@ export async function refreshAccessToken(
   }
 }
 
-
-export async function signOut (req: Request, res:Response) {
+export async function signOut(req: Request, res: Response) {
   const { refreshToken } = req.cookies;
   if (!refreshToken) {
-    res.status(401).json({ message: "Refresh token not found" });
-    return;
+    const error = new Error("Refresh token not found");
+    return handleErrorResponse(res, error, 404);
   }
   res.clearCookie("refreshToken");
   res.status(200).json({ message: "Sign out successfully" });

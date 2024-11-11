@@ -1,12 +1,12 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const posts_route_1 = require("./posts.route");
-const user_route_1 = require("./user.route");
-const router_1 = __importDefault(require("../lib/router"));
-router_1.default.use(posts_route_1.postsRoute);
-router_1.default.use(user_route_1.userRoute);
-exports.default = router_1.default;
+const route = require("express").Router();
+const users_route_1 = require("./users.route");
+const auth_route_1 = require("./auth.route");
+const books_route_1 = require("./books.route");
+const middleware_1 = require("../middleware");
+route.use("/books", middleware_1.authMiddleware, books_route_1.bookRoute);
+route.use("/users", middleware_1.authMiddleware, users_route_1.userRoute);
+route.use(auth_route_1.authRoute);
+exports.default = route;
 //# sourceMappingURL=index.js.map

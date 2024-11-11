@@ -1,0 +1,1 @@
+export type OrderProps ={ bookId: number; quantity: number }

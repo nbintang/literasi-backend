@@ -21,7 +21,7 @@ model User {
 
 model Author {
   id        Int      @id @default(autoincrement())
-  name      String
+  name      String   @unique
   bio       String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -51,10 +51,24 @@ model Book {
   authorId    Int
   categoryId  Int
 
-  author   Author   @relation(fields: [authorId], references: [id])
-  category Category @relation(fields: [categoryId], references: [id])
-
+  author     Author      @relation(fields: [authorId], references: [id])
+  category   Category    @relation(fields: [categoryId], references: [id])
   orderItems OrderItem[]
+}
+
+model OrderItem {
+  id       Int @id @default(autoincrement())
+  orderId  Int
+  bookId   Int
+  quantity Int @default(1)
+
+  order Order @relation(fields: [orderId], references: [id])
+  book  Book  @relation(fields: [bookId], references: [id], onDelete: Cascade) // Set cascade delete here
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model Order {
@@ -66,19 +80,4 @@ model Order {
 
   user       User        @relation(fields: [userId], references: [id])
   orderItems OrderItem[]
-}
-
-model OrderItem {
-  id       Int @id @default(autoincrement())
-  orderId  Int
-  bookId   Int
-  quantity Int @default(1)
-
-  order Order @relation(fields: [orderId], references: [id])
-  book  Book  @relation(fields: [bookId], references: [id])
-}
-
-enum Role {
-  USER
-  ADMIN
 }
