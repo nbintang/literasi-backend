@@ -2,7 +2,7 @@ import { InputUserProps } from "../../types";
 import { db } from "../../lib/db";
 
 export const findUsers = async () =>
-  await db.user.findMany({ where: { role: "USER" } });
+  await db.user.findMany({ where: { role: "USER" },  });
 
 export const findUserById = async (id: number) =>
   await db.user.findUnique({ where: { id }, include: { orders: true } });

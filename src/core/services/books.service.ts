@@ -57,11 +57,13 @@ export const postBooks = [
         stock,
       }: InputBooksProps = req.body;
       const image = req.file;
+      
       if (!image) {
         const error = new Error("Image not found");
         return handleErrorResponse(res, error);
       }
       const imageUrl = await uploadToCloudinary(image.buffer);
+    
       const book = await createBook({
         title,
         description,
@@ -69,8 +71,8 @@ export const postBooks = [
         author,
         category,
         content,
-        price,
-        stock,
+        price: Number(price),
+        stock: Number(stock),
       });
       res.status(200).json({ success: true, data: book });
     } catch (error) {

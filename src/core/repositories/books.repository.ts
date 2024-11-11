@@ -14,35 +14,40 @@ export const findBooksByCategory = async (name: string, page: number) =>
     take: 10,
     skip: (page - 1) * 10,
   });
-
-export const createBook = async ({
-  title,
-  description,
-  imageUrl,
-  price,
-  content,
-  stock,
-  author,
-  category,
-}: InputBooksProps) =>
-  await db.book.create({
-    data: {
-      title,
-      description,
-      imageUrl,
-      price,
-      stock,
-      content,
-      author: { create: { name: author } },
-      category: {
-        connectOrCreate: {
-          where: { name: category },
-          create: { name: category },
+  export const createBook = async ({
+    title,
+    description,
+    imageUrl,
+    price,
+    content,
+    stock,
+    author,
+    category,
+  }: InputBooksProps) => {
+    return await db.book.create({
+      data: {
+        title,
+        description,
+        imageUrl,
+        price,
+        stock,
+        content,
+        author: {
+          connectOrCreate: {
+            where: { name: author }, 
+            create: { name: author },
+          },
+        },
+        category: {
+          connectOrCreate: {
+            where: { name: category },
+            create: { name: category },
+          },
         },
       },
-    },
-  });
-
+    });
+  };
+  
 export const updateBook = async (
   id: number,
   {

@@ -18,7 +18,6 @@ export async function getOrderByUserId(req: Request, res: Response) {
 }
 
 export async function postOrder(req: Request, res: Response) {
-  console.log("Request Body:", req.body);
   const items: OrderProps[] = req.body.items;
 
   if (!items || !Array.isArray(items)) {
