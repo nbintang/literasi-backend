@@ -44,7 +44,7 @@ export async function signIn(req: Request, res: Response) {
     });
     res.cookie("refreshToken", refreshToken, {
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
     });
