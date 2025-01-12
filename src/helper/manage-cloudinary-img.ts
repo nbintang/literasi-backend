@@ -30,7 +30,6 @@ async function checkAndDestroyImage(public_id: string): Promise<void> {
         if (destroyError) {
           return reject(destroyError);
         }
-        console.log("Image destroyed successfully.");
         resolve();
       });
     });

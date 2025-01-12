@@ -1,7 +1,18 @@
 import { db } from "../../lib/db";
 
 export const deleteOrderItemById = async (id: number) => {
-  return await db.orderItem.delete({ where: { id } });
+  return await db.$transaction(async (tx) => {
+      const orderItem = await tx.orderItem.findUnique({ where: { id } });
+
+      await tx.book.update({
+        where: { id: orderItem?.bookId },
+        data: { stock: { increment: orderItem?.quantity } },
+      });
+
+      await tx.orderItem.delete({ where: { id } });
+
+      return orderItem
+  })
 };
 
 export const findOrderItemById = async (id: number) => {
@@ -12,13 +23,17 @@ export const findOrderItemById = async (id: number) => {
       orderId: true,
       bookId: true,
       quantity: true,
-      order: { select: { user: { select: { id: true ,name: true, } } } },
-      book: { select: { title: true } },
+      order: { select: {  user: { select: { name: true, } } } },
+      book: { select: { title: true, price: true, description: true } },
     },
   });
 
   return {
-    ...orderItem,
-    book: orderItem?.book.title,
+    id: orderItem?.id,
+    orderId: orderItem?.orderId,
+    bookId: orderItem?.bookId,
+    quantity: orderItem?.quantity,
+    user: orderItem?.order.user.name,
+    book: orderItem?.book,
   };
 };

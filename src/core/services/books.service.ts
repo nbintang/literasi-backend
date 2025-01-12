@@ -41,6 +41,7 @@ export async function getBookById(req: Request, res: Response) {
 export async function getBooksByCategory(req: Request, res: Response) {
   try {
     const name = req.params.name as string;
+    if(!name) return handleErrorResponse(res, new Error("Genre not found"));
     const { page, pageSize } = req.query || {};
     const pageNum = Number(page) || 1;
     const pageSizeNum = Number(pageSize) || 10;
@@ -51,8 +52,7 @@ export async function getBooksByCategory(req: Request, res: Response) {
       skip,
     });
     if (!book) {
-      res.status(404).json({ success: false, message: "Book not found" });
-      return;
+      return handleErrorResponse(res, new Error("Book not found"));
     }
     res
       .status(200)

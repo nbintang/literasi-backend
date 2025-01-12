@@ -36,11 +36,17 @@ async function signIn(req, res) {
             return (0, error_response_1.handleErrorResponse)(res, error, 401);
         }
         const id = userExisted.id.toString();
-        const accessToken = await (0, jwt_1.generateAccessToken)({ id, role: userExisted.role });
-        const refreshToken = await (0, jwt_1.generateRefreshToken)({ id, role: userExisted.role });
+        const accessToken = await (0, jwt_1.generateAccessToken)({
+            id,
+            role: userExisted.role,
+        });
+        const refreshToken = await (0, jwt_1.generateRefreshToken)({
+            id,
+            role: userExisted.role,
+        });
         res.cookie("refreshToken", refreshToken, {
             sameSite: "lax",
-            secure: true,
+            secure: false,
             httpOnly: true,
             maxAge: 24 * 60 * 60 * 1000,
         });
@@ -65,14 +71,13 @@ async function refreshAccessToken(req, res, next) {
         const decode = (await (0, jwt_1.verifyToken)(refreshToken));
         const accessToken = await (0, jwt_1.generateAccessToken)({
             id: decode.id.toString(),
-            time: "15s",
             role: decode.role,
         });
         res.status(200).json({ success: true, accessToken });
     }
     catch (error) {
         res.clearCookie("refreshToken");
-        (0, error_response_1.handleErrorResponse)(res, error);
+        return (0, error_response_1.handleErrorResponse)(res, error, 401);
     }
 }
 async function signOut(req, res) {

@@ -8,6 +8,7 @@ export const findOrderBookByUserId = async (userId: number) => {
       id: true,
       totalPrice: true,
       createdAt: true,
+      _count: { select: { orderItems: true } },
       orderItems: {
         select: {
           id: true,
@@ -20,11 +21,16 @@ export const findOrderBookByUserId = async (userId: number) => {
   });
 
   return order.map((item) => ({
-    totalQuantity: item.orderItems.reduce(
-      (total, item) => total + item.quantity,
-      0
-    ),
-    ...item,
+    id: item.id,
+    totalPrice: item.totalPrice,
+    createdAt: item.createdAt,
+    count: item._count.orderItems,
+    orderItems: item.orderItems.map((orderItem) => ({
+      id: orderItem.id,
+      orderId: orderItem.orderId,
+      bookId: orderItem.bookId,
+      quantity: orderItem.quantity,
+    })),
   }));
 };
 
@@ -140,7 +146,6 @@ export const deleteOrderById = async (id: number) => {
     await tx.order.delete({ where: { id } });
   });
 };
-
 
 export const findOrderById = async (id: number) =>
   await db.order.findUnique({ where: { id }, include: { orderItems: true } });
