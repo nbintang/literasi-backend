@@ -46,7 +46,7 @@ export async function signIn(req: Request, res: Response) {
       sameSite: "lax",
       secure: false,
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
+      maxAge: 24 * 60 * 60 * 1000,
     });
     res.status(200).json({
       success: true,
@@ -72,10 +72,8 @@ export async function refreshAccessToken(
   }
 
   try {
-    // Verify and decode the refresh token
     const decode = (await verifyToken(refreshToken)) as CustomJwtPayload;
 
-    // Generate new access token
     const accessToken = await generateAccessToken({
       id: decode.id.toString(),
       role: decode.role,
@@ -83,7 +81,6 @@ export async function refreshAccessToken(
 
     res.status(200).json({ success: true, accessToken });
   } catch (error) {
-    // Clear the refresh token if invalid
     res.clearCookie("refreshToken");
     return handleErrorResponse(res, error as Error, 401);
   }
@@ -98,3 +95,4 @@ export async function signOut(req: Request, res: Response) {
   res.clearCookie("refreshToken");
   res.status(200).json({ message: "Sign out successfully" });
 }
+

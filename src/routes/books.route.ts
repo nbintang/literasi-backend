@@ -1,3 +1,5 @@
+
+import { Router } from "express";
 import {
   getBookById,
   getBooks,
@@ -6,11 +8,13 @@ import {
   postBooks,
   removeBook,
 } from "../core/services/books.service";
-const route = require("express").Router();
+import upload from "../lib/upload";
+const route =Router()
+
 route.get("/", getBooks);
 route.get("/:id", getBookById);
 route.get("/category/:name", getBooksByCategory);
-route.post("/", postBooks);
-route.put("/:id", putBooks);
+route.post("/", upload.single("image"), postBooks);
+route.put("/:id", upload.single("image"), putBooks);
 route.delete("/:id", removeBook);
 export { route as bookRoute };

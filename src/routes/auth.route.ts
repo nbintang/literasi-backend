@@ -1,4 +1,5 @@
-import route from "../lib/router";
+
+import { Router } from "express";
 import {
   refreshAccessToken,
   signIn,
@@ -6,6 +7,7 @@ import {
   signUp,
 } from "../core/services/auth.service";
 import { authMiddleware } from "../middleware/index";
+const route =Router()
 
 route.post("/signup", signUp);
 route.post("/signin", signIn);

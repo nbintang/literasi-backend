@@ -4,13 +4,13 @@ import { handleErrorResponse } from "../../helper/error-response";
 
 export async function getUsers(req: Request, res: Response) {
   const users = await findUsers();
-  res.status(200).json(users);
+  res.status(200).json({ success: true, data: users });
 }
 
 export async function getUserById(req: Request, res: Response): Promise<void> {
   const { id } = req.params;
 
-  if (!id || isNaN(Number(id))) {
+  if (!id) {
     const error = new Error("Invalid user id");
     return handleErrorResponse(res, error);
   }

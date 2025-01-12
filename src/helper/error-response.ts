@@ -5,5 +5,5 @@ export function handleErrorResponse(
   error: Error,
   status?: number
 ) {
-  res.status(status || 500).json({ message: error.message });
+  res.status(status || 500).json({ success: false, message: error.message });
 }
