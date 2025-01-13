@@ -43,9 +43,11 @@ export async function signIn(req: Request, res: Response) {
       role: userExisted.role,
     });
     res.cookie("refreshToken", refreshToken, {
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
-    });
+    }); // for under development, set to lax
     res.status(200).json({
       success: true,
       message: "Welcome!...",
