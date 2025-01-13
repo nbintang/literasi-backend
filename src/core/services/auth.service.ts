@@ -43,8 +43,6 @@ export async function signIn(req: Request, res: Response) {
       role: userExisted.role,
     });
     res.cookie("refreshToken", refreshToken, {
-      sameSite: "lax",
-      secure: false,
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
     });
@@ -95,4 +93,3 @@ export async function signOut(req: Request, res: Response) {
   res.clearCookie("refreshToken");
   res.status(200).json({ message: "Sign out successfully" });
 }
-
