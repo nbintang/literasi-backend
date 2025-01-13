@@ -23,7 +23,6 @@ async function checkAndDestroyImage(public_id) {
                 if (destroyError) {
                     return reject(destroyError);
                 }
-                console.log("Image destroyed successfully.");
                 resolve();
             });
         });

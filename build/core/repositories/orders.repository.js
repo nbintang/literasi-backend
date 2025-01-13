@@ -9,6 +9,7 @@ const findOrderBookByUserId = async (userId) => {
             id: true,
             totalPrice: true,
             createdAt: true,
+            _count: { select: { orderItems: true } },
             orderItems: {
                 select: {
                     id: true,
@@ -20,8 +21,16 @@ const findOrderBookByUserId = async (userId) => {
         },
     });
     return order.map((item) => ({
-        totalQuantity: item.orderItems.reduce((total, item) => total + item.quantity, 0),
-        ...item,
+        id: item.id,
+        totalPrice: item.totalPrice,
+        createdAt: item.createdAt,
+        count: item._count.orderItems,
+        orderItems: item.orderItems.map((orderItem) => ({
+            id: orderItem.id,
+            orderId: orderItem.orderId,
+            bookId: orderItem.bookId,
+            quantity: orderItem.quantity,
+        })),
     }));
 };
 exports.findOrderBookByUserId = findOrderBookByUserId;

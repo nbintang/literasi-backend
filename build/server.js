@@ -9,7 +9,7 @@ const routes_1 = __importDefault(require("./routes"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const app = (0, express_1.default)();
-const port = 3000;
+const port = 3001;
 dotenv_1.default.config();
 app.use((0, cors_1.default)({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express_1.default.json());

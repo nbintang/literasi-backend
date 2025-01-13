@@ -42,12 +42,15 @@ export async function signIn(req: Request, res: Response) {
       id,
       role: userExisted.role,
     });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Ensure secure in production
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
+
+    if (accessToken && refreshToken) {
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== "development", // Ensure secure in production
+        sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      });
+    }
     res.status(200).json({
       success: true,
       message: "Welcome!...",

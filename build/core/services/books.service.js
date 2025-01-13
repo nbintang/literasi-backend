@@ -38,6 +38,8 @@ async function getBookById(req, res) {
 async function getBooksByCategory(req, res) {
     try {
         const name = req.params.name;
+        if (!name)
+            return (0, error_response_1.handleErrorResponse)(res, new Error("Genre not found"));
         const { page, pageSize } = req.query || {};
         const pageNum = Number(page) || 1;
         const pageSizeNum = Number(pageSize) || 10;
@@ -48,8 +50,7 @@ async function getBooksByCategory(req, res) {
             skip,
         });
         if (!book) {
-            res.status(404).json({ success: false, message: "Book not found" });
-            return;
+            return (0, error_response_1.handleErrorResponse)(res, new Error("Book not found"));
         }
         res
             .status(200)

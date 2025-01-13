@@ -11,7 +11,6 @@ const route = (0, express_1.Router)();
 exports.bookRoute = route;
 route.get("/", books_service_1.getBooks);
 route.get("/:id", books_service_1.getBookById);
-route.get("/category/:name", books_service_1.getBooksByCategory);
 route.post("/", upload_1.default.single("image"), books_service_1.postBooks);
 route.put("/:id", upload_1.default.single("image"), books_service_1.putBooks);
 route.delete("/:id", books_service_1.removeBook);
