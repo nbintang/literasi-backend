@@ -44,8 +44,10 @@ export async function signIn(req: Request, res: Response) {
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    }); // for under development, set to lax
+      secure: true, // Ensure secure in production
+      sameSite: "none", // Required for cross-origin cookies
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
     res.status(200).json({
       success: true,
       message: "Welcome!...",
