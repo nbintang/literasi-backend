@@ -5,8 +5,8 @@ import {
   signIn,
   signOut,
   signUp,
-} from "../core/services/auth.service";
-import { authMiddleware } from "../middleware/index";
+} from "../controller/services";
+import { authMiddleware } from "../middleware";
 const route =Router()
 
 route.post("/signup", signUp);

@@ -5,10 +5,10 @@ import {
   findOrderBookByUserId,
   findOrderById,
   updateOrderById,
-} from "../repositories/orders.repository";
+  getBooksByIds
+} from "../repositories";
 import { handleErrorResponse } from "../../helper/error-response";
 import { RequestWithPayload } from "../../types";
-import { getBooksByIds } from "../repositories/books.repository";
 import { OrderProps } from "../../types/order";
 import {
   countInsufficientStock,

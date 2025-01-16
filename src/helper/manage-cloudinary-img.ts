@@ -1,14 +1,17 @@
 import { cloudinary } from "../lib/cld";
 
+interface ManageCloudinaryImages {
+  buffer: Buffer;
+  folder?: string;
+  public_id?: string;
+}
+type CloudinaryResponse = Promise<{ secure_url: string; public_id: string }>;
+
 export default async function manageCloudinaryImages({
   buffer,
   folder = "book-covers",
   public_id,
-}: {
-  buffer: Buffer;
-  folder?: string;
-  public_id?: string;
-}): Promise<{ secure_url: string; public_id: string }> {
+}: ManageCloudinaryImages): CloudinaryResponse {
   if (public_id) {
     try {
       await checkAndDestroyImage(public_id);
@@ -40,11 +43,7 @@ async function uploadImgToCloudinary({
   buffer,
   folder,
   public_id,
-}: {
-  buffer: Buffer;
-  folder?: string;
-  public_id?: string;
-}): Promise<{ secure_url: string; public_id: string }> {
+}: ManageCloudinaryImages): CloudinaryResponse {
   return new Promise((resolve, reject) => {
     cloudinary.uploader
       .upload_stream(

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import {
   deleteOrderItemById,
   findOrderItemById,
-} from "../repositories/order-item.repository";
+} from "../repositories";
 
 export async function deleteOrderItem(req: Request, res: Response) {
   const { id } = req.params;

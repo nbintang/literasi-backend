@@ -4,7 +4,7 @@ import {
   patchOrder,
   postOrder,
   removeOrder,
-} from "../core/services/order.service";
+} from "../controller/services";
 const route = Router();
 
 route.get("/", getOrderByUserId);

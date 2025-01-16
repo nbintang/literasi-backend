@@ -6,7 +6,7 @@ import {
   createBook,
   updateBook,
   deleteBooks,
-} from "../repositories/books.repository";
+} from "../repositories";
 import { handleErrorResponse } from "../../helper/error-response";
 import { InputBooksProps } from "../../types/books";
 import manageCloudinaryImages from "../../helper/manage-cloudinary-img";

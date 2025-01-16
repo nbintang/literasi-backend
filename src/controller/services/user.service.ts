@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { findUserById, findUsers } from "../repositories/users.repository";
+import { findUserById, findUsers } from "../repositories";
 import { handleErrorResponse } from "../../helper/error-response";
 
 export async function getUsers(req: Request, res: Response) {
@@ -16,7 +16,6 @@ export async function getUserById(req: Request, res: Response): Promise<void> {
   }
 
   const user = await findUserById(Number(id));
-
   if (!user) {
     const error = new Error("User not found");
     return handleErrorResponse(res, error, 404);
@@ -24,3 +23,5 @@ export async function getUserById(req: Request, res: Response): Promise<void> {
 
   res.status(200).json({ success: true, data: user });
 }
+
+

@@ -1,31 +1,23 @@
-import { NextFunction, Request, Response } from "express";
-import { handleErrorResponse } from "../helper/error-response";
-import jwt from "jsonwebtoken";
-import { CustomJwtPayload, RequestWithPayload } from "../types";
+import passport from "passport";
+import { findUserById } from "../controller/repositories";
+import { ExtractJwt, Strategy as JWTStrategy } from "passport-jwt";
 
-export function authMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
-  const authHeader = req.header("Authorization");
-  if (!authHeader) {
-     res.status(401).json({ message: "Unauthorized" });
-     return;
-  }
-  const token = authHeader.replace("Bearer ", "");
-  try {
-    jwt.verify(token, process.env.JWT_SECRET!, (err, user) => {
-      if (err) {
-        res.status(401).json({ message: "Unauthorized" });
-        return;
+passport.use(
+  new JWTStrategy(
+    {
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET!,
+    },
+    async (jwtPayload, done) => {
+      try {
+        const user = await findUserById(Number(jwtPayload.id));
+        if (!user) return done(null, false, { message: "User not found" });
+        return done(null, user);
+      } catch (error) {
+        return done(error);
       }
+    }
+  )
+);
 
-      (req as RequestWithPayload).id = (user as CustomJwtPayload).id;
-      (req as RequestWithPayload).role = (user as CustomJwtPayload).role;
-      next();
-    });
-  } catch (error) {
-    handleErrorResponse(res, error as Error);
-  }
-}
+export const authMiddleware = passport.authenticate("jwt", { session: false });

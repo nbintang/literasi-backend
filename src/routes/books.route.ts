@@ -3,11 +3,10 @@ import { Router } from "express";
 import {
   getBookById,
   getBooks,
-  getBooksByCategory,
   putBooks,
   postBooks,
   removeBook,
-} from "../core/services/books.service";
+} from "../controller/services";
 import upload from "../lib/upload";
 const route =Router()
 

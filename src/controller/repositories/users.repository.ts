@@ -15,11 +15,12 @@ export const findUsers = async () =>
 
 export const findUserById = async (id: number) =>
   await db.user.findUnique({
-    where: { id, role: "USER" },
+    where: { id },
     select: {
       email: true,
       name: true,
       id: true,
+      image: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -34,4 +35,4 @@ export const createUser = async ({ email, password, name }: InputUserProps) => {
 };
 
 export const findUserByEmail = async (email: string) =>
-  await db.user.findUnique({ where: { email } });
+  await db.user.findUnique({ where: { email }, });

@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
-import { createUser, findUserByEmail } from "../repositories/users.repository";
+import { createUser } from "../repositories";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -8,6 +8,8 @@ import {
 } from "../../lib/jwt";
 import { CustomJwtPayload, RequestWithToken } from "../../types";
 import { handleErrorResponse } from "../../helper/error-response";
+import passport from "passport";
+import { User } from "@prisma/client";
 
 export async function signUp(req: Request, res: Response) {
   const { email, password, name } = req.body;
@@ -20,46 +22,47 @@ export async function signUp(req: Request, res: Response) {
   }
 }
 
-export async function signIn(req: Request, res: Response) {
-  const { email, password } = req.body;
-  try {
-    const userExisted = await findUserByEmail(email);
-    if (!userExisted) {
-      const error = new Error("User not found");
-      return handleErrorResponse(res, error, 404);
+export async function signIn(req: Request, res: Response, next: NextFunction) {
+  passport.authenticate("local", async (err: any, user: User, info: any) => {
+    if (err) {
+      const error = new Error(err.message);
+      return handleErrorResponse(res, error,);
     }
-    const isPwValid = await bcrypt.compare(password, userExisted.password);
-    if (!isPwValid) {
-      const error = new Error("Invalid password");
+
+    if (!user) {
+      const error = new Error(info.message);
       return handleErrorResponse(res, error, 401);
     }
-    const id = userExisted.id.toString();
-    const accessToken = await generateAccessToken({
-      id,
-      role: userExisted.role,
-    });
-    const refreshToken = await generateRefreshToken({
-      id,
-      role: userExisted.role,
-    });
 
-    if (accessToken && refreshToken) {
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV !== "development", // Ensure secure in production
-        sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+    try {
+      const accessToken = await generateAccessToken({
+        id: user.id.toString(),
+        role: user.role,
       });
+
+      const refreshToken = await generateRefreshToken({
+        id: user.id.toString(),
+        role: user.role,
+      });
+
+      if (accessToken && refreshToken) {
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== "development",
+          sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+          maxAge: 24 * 60 * 60 * 1000,
+        });
+      }
+      res.status(200).json({
+        success: true,
+        message: "Welcome!...",
+        accessToken,
+        refreshToken,
+      });
+    } catch (error) {
+      handleErrorResponse(res, error as Error);
     }
-    res.status(200).json({
-      success: true,
-      message: "Welcome!...",
-      accessToken,
-      refreshToken,
-    });
-  } catch (error) {
-    handleErrorResponse(res, error as Error);
-  }
+  })(req, res, next);
 }
 
 export async function refreshAccessToken(
@@ -96,5 +99,6 @@ export async function signOut(req: Request, res: Response) {
     return handleErrorResponse(res, error, 404);
   }
   res.clearCookie("refreshToken");
+  res.clearCookie("accessToken");
   res.status(200).json({ message: "Sign out successfully" });
 }

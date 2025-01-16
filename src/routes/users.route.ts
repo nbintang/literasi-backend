@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { getOrderByUserId, postOrder } from "../core/services/order.service";
-import { getUserById, getUsers } from "../core/services/user.service";
+import { getUserById, getUsers } from "../controller/services";
 const route =Router()
 route.get("/", getUsers);
 route.get("/:id", getUserById);
