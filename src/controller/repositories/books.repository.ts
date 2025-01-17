@@ -12,16 +12,20 @@ export const findBooks = async (take: number, skip: number) => {
       description: true,
       price: true,
       stock: true,
-      author: { select: { id: true, name: true } },
-      category: { select: { id: true, name: true } },
+      authorName: true,
+      categories: {
+        select: {
+          name: true,
+        },
+      },
       createdAt: true,
       updatedAt: true,
     },
   });
   const mutableBooks = await books.map((book) => ({
     ...book,
-    author: book.author.name,
-    category: book.category.name,
+    author: book.authorName,
+    categories: book.categories.map((category) => category.name).join(", "),
   }));
   return {
     total: await db.book.count(),
@@ -29,7 +33,7 @@ export const findBooks = async (take: number, skip: number) => {
   };
 };
 
-export const findBookById = async (id: number) => {
+export const findBookById = async (id: string) => {
   const book = await db.book.findUnique({
     where: { id },
     select: {
@@ -40,16 +44,16 @@ export const findBookById = async (id: number) => {
       price: true,
       stock: true,
       content: true,
-      author: { select: { id: true, name: true, bio: true, createdAt: true } },
-      category: { select: { id: true, name: true } },
+      authorName: true,
+      categories: { select: { name: true } },
       createdAt: true,
       updatedAt: true,
     },
   });
   return {
     ...book,
-    author: book?.author.name,
-    category: book?.category.name,
+    author: book?.authorName,
+    categories: book?.categories.map((category) => category.name).join(", "),
   };
 };
 
@@ -74,10 +78,8 @@ export const findBooksByCategory = async ({
           image: true,
           description: true,
           price: true,
-          author: { select: { id: true, name: true } },
-          createdAt: true,
-        },
-      },
+        authorName: true,
+        }}
     },
     take,
     skip,
@@ -85,7 +87,7 @@ export const findBooksByCategory = async ({
 
   const mutableCategoryBooks = await categoryBooks?.books.map((book) => ({
     ...book,
-    author: book.author.name,
+    author: book.authorName,
   }));
   return mutableCategoryBooks;
 };
@@ -97,8 +99,8 @@ export const createBook = async ({
   price,
   content,
   stock,
-  author,
-  category,
+  categories,
+  authorName
 }: InputBooksProps) => {
   const createdBook = await db.book.create({
     data: {
@@ -108,17 +110,12 @@ export const createBook = async ({
       price,
       stock,
       content,
-      author: {
-        connectOrCreate: {
-          where: { name: author },
-          create: { name: author },
-        },
-      },
-      category: {
-        connectOrCreate: {
+      authorName,
+      categories: {
+        connectOrCreate: categories.map((category) => ({
           where: { name: category },
           create: { name: category },
-        },
+        })), 
       },
     },
   });
@@ -127,38 +124,33 @@ export const createBook = async ({
 };
 
 export const updateBook = async (
-  id: number,
+  id: string,
   {
     title,
     description,
     image,
     price,
     content,
-    author,
     stock,
-    category,
+    authorName,
+    categories,
   }: InputBooksProps
 ) => {
   const updatedBook = await db.book.update({
-    where: { id },
+    where: {id},
     data: {
       title,
       description,
-      stock,
       image,
       price,
+      stock,
       content,
-      author: {
-        connectOrCreate: {
-          where: { name: author },
-          create: { name: author },
-        },
-      },
-      category: {
-        connectOrCreate: {
+      authorName,
+      categories: {
+        connectOrCreate: categories.map((category) => ({
           where: { name: category },
           create: { name: category },
-        },
+        })),
       },
     },
   });
@@ -166,10 +158,10 @@ export const updateBook = async (
   return book;
 };
 
-export const deleteBooks = async (id: number) =>
+export const deleteBooks = async (id: string) =>
   await db.book.delete({ where: { id } });
 
-export const getBooksByIds = async (bookIds: number[]) => {
+export const getBooksByIds = async (bookIds: string[]) => {
   return await db.book.findMany({
     where: {
       id: {
@@ -184,7 +176,7 @@ export const getBooksByIds = async (bookIds: number[]) => {
     },
   });
 };
-export const updateBookStock = async (bookId: number, quantity: number) => {
+export const updateBookStock = async (bookId: string, quantity: number) => {
   return await db.book.update({
     where: { id: bookId },
     data: { stock: { decrement: quantity } },

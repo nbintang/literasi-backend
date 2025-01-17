@@ -14,3 +14,14 @@ export interface RequestWithPayload extends Request {
   id?: string;
   role?: string;
 }
+
+export interface UserPayload {
+  id: string;
+  email: string;
+  username: string;
+  role?: string;
+}
+
+export interface SafeUserPayload extends UserPayload {
+  image?: string;
+}

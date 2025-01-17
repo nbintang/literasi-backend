@@ -39,7 +39,7 @@ async function checkAndDestroyImage(public_id: string): Promise<void> {
   });
 }
 
-async function uploadImgToCloudinary({
+export async function uploadImgToCloudinary({
   buffer,
   folder,
   public_id,

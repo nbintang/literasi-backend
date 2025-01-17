@@ -1,21 +1,21 @@
 import { db } from "../../lib/db";
 
-export const deleteOrderItemById = async (id: number) => {
+export const deleteOrderItemById = async (id: string) => {
   return await db.$transaction(async (tx) => {
-      const orderItem = await tx.orderItem.findUnique({ where: { id } });
+    const orderItem = await tx.orderItem.findUnique({ where: { id } });
 
-      await tx.book.update({
-        where: { id: orderItem?.bookId },
-        data: { stock: { increment: orderItem?.quantity } },
-      });
+    await tx.book.update({
+      where: { id: orderItem?.bookId },
+      data: { stock: { increment: orderItem?.quantity } },
+    });
 
-      await tx.orderItem.delete({ where: { id } });
+    await tx.orderItem.delete({ where: { id } });
 
-      return orderItem
-  })
+    return orderItem;
+  });
 };
 
-export const findOrderItemById = async (id: number) => {
+export const findOrderItemById = async (id: string) => {
   const orderItem = await db.orderItem.findUnique({
     where: { id },
     select: {
@@ -23,7 +23,15 @@ export const findOrderItemById = async (id: number) => {
       orderId: true,
       bookId: true,
       quantity: true,
-      order: { select: {  user: { select: { name: true, } } } },
+      order: {
+        select: {
+          orderedUser: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
       book: { select: { title: true, price: true, description: true } },
     },
   });
@@ -33,7 +41,7 @@ export const findOrderItemById = async (id: number) => {
     orderId: orderItem?.orderId,
     bookId: orderItem?.bookId,
     quantity: orderItem?.quantity,
-    user: orderItem?.order.user.name,
+    user: orderItem?.order.orderedUser.name,
     book: orderItem?.book,
   };
 };

@@ -4,7 +4,7 @@ export type InputBooksProps = {
     image: string
     price: number; // assuming price is a number
     content: string;
-    author: string;
+    authorName: string,
     stock?: number;
-    category: string;
+    categories: string[];
   }

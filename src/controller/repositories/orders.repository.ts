@@ -1,9 +1,9 @@
 import { db } from "../../lib/db";
 import { OrderProps } from "../../types/order";
 
-export const findOrderBookByUserId = async (userId: number) => {
+export const findOrderBookByUserId = async (orderedUserId: string) => {
   const order = await db.order.findMany({
-    where: { userId },
+    where: { orderedUserId: orderedUserId },
     select: {
       id: true,
       totalPrice: true,
@@ -36,11 +36,11 @@ export const findOrderBookByUserId = async (userId: number) => {
 
 export const createOrder = async ({
   items,
-  userId,
+  orderedUserId,
   totalPrice,
 }: {
   items: OrderProps[];
-  userId: number;
+  orderedUserId: string,
   totalPrice: number;
 }) => {
   return await db.$transaction(async (tx) => {
@@ -55,7 +55,7 @@ export const createOrder = async ({
 
     const order = await tx.order.create({
       data: {
-        userId,
+        orderedUserId,
         totalPrice,
       },
     });
@@ -74,19 +74,19 @@ export const createOrder = async ({
 };
 
 export const updateOrderById = async ({
-  id,
+  orderId,
   items,
-  userId,
+  orderedUserId,
   totalPrice,
 }: {
-  id: number;
+  orderId: string
   items: OrderProps[];
-  userId: number;
+  orderedUserId: string;
   totalPrice: number;
 }) => {
   return await db.$transaction(async (tx) => {
     const existingOrderItems = await tx.orderItem.findMany({
-      where: { orderId: id },
+      where: { orderId },
     });
 
     await Promise.all(
@@ -98,7 +98,7 @@ export const updateOrderById = async ({
       )
     );
 
-    await tx.orderItem.deleteMany({ where: { orderId: id } });
+    await tx.orderItem.deleteMany({ where: { orderId} });
 
     await Promise.all(
       items.map((item) =>
@@ -110,9 +110,9 @@ export const updateOrderById = async ({
     );
 
     const order = await tx.order.update({
-      where: { id },
+      where: { id: orderId },
       data: {
-        userId,
+        orderedUserId,
         totalPrice,
       },
     });
@@ -130,7 +130,7 @@ export const updateOrderById = async ({
   });
 };
 
-export const deleteOrderById = async (id: number) => {
+export const deleteOrderById = async (id: string) => {
   return await db.$transaction(async (tx) => {
     const orderItem = await tx.orderItem.findMany({ where: { orderId: id } });
 
@@ -147,5 +147,5 @@ export const deleteOrderById = async (id: number) => {
   });
 };
 
-export const findOrderById = async (id: number) =>
+export const findOrderById = async (id: string) =>
   await db.order.findUnique({ where: { id }, include: { orderItems: true } });

@@ -1,1 +1,1 @@
-export type OrderProps ={ bookId: number; quantity: number }
+export type OrderProps ={ bookId: string; quantity: number }

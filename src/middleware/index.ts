@@ -1,6 +1,7 @@
 import passport from "passport";
 import { findUserById } from "../controller/repositories";
 import { ExtractJwt, Strategy as JWTStrategy } from "passport-jwt";
+import { SafeUserPayload } from "../types";
 
 passport.use(
   new JWTStrategy(
@@ -10,9 +11,16 @@ passport.use(
     },
     async (jwtPayload, done) => {
       try {
-        const user = await findUserById(Number(jwtPayload.id));
+        const user = await findUserById(jwtPayload.id);
         if (!user) return done(null, false, { message: "User not found" });
-        return done(null, user);
+        const safeUser = {
+          id: user.id,
+          image: user.image,
+          username: user.name,
+          email: user.email,
+        } as SafeUserPayload;
+
+        return done(null, safeUser);
       } catch (error) {
         return done(error);
       }

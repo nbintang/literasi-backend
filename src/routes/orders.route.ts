@@ -1,13 +1,13 @@
 import { Router } from "express";
 import {
-  getOrderByUserId,
+  getOrderByUserProfileId,
   patchOrder,
   postOrder,
   removeOrder,
 } from "../controller/services";
 const route = Router();
 
-route.get("/", getOrderByUserId);
+route.get("/", getOrderByUserProfileId);
 route.post("/", postOrder);
 route.delete("/:id", removeOrder);
 route.patch("/:id", patchOrder);

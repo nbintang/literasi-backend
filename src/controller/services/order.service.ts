@@ -5,7 +5,7 @@ import {
   findOrderBookByUserId,
   findOrderById,
   updateOrderById,
-  getBooksByIds
+  getBooksByIds,
 } from "../repositories";
 import { handleErrorResponse } from "../../helper/error-response";
 import { RequestWithPayload } from "../../types";
@@ -15,10 +15,11 @@ import {
   countTotalPrice,
 } from "../../helper/count-price";
 
-export async function getOrderByUserId(req: Request, res: Response) {
-  const userId = req.query.userId as string;
-  if(!userId) return handleErrorResponse(res, new Error("User id not found"));
-  const order = await findOrderBookByUserId(Number(userId));
+export async function getOrderByUserProfileId(req: Request, res: Response) {
+  const userId = req.query.id as string;
+  if (!userId)
+    return handleErrorResponse(res, new Error("User id not found"));
+  const order = await findOrderBookByUserId(userId);
   res.status(200).json({ success: true, data: order });
 }
 
@@ -28,7 +29,7 @@ export async function postOrder(req: Request, res: Response) {
     return handleErrorResponse(res, new Error("Invalid items"), 400);
   }
 
-  const userId = (req as RequestWithPayload).id;
+  const userId = (req as RequestWithPayload).id   ;
   if (!userId) {
     throw new Error("Unauthorized");
   }
@@ -46,7 +47,7 @@ export async function postOrder(req: Request, res: Response) {
     const totalPrice = await countTotalPrice(items, books);
     const result = await createOrder({
       items,
-      userId: Number(userId),
+      orderedUserId: userId,
       totalPrice,
     });
 
@@ -59,7 +60,7 @@ export async function postOrder(req: Request, res: Response) {
 }
 
 export async function patchOrder(req: Request, res: Response) {
-  const id = Number(req.params.id);
+  const orderId = req.params.id
   const items: OrderProps[] = req.body.items;
   if (!items || !Array.isArray(items)) {
     return handleErrorResponse(res, new Error("Invalid items"), 400);
@@ -81,9 +82,9 @@ export async function patchOrder(req: Request, res: Response) {
     }
     const totalPrice = await countTotalPrice(items, books);
     const result = await updateOrderById({
-      id,
+      orderId,
       items,
-      userId: Number(userId),
+      orderedUserId: userId,
       totalPrice,
     });
     res
@@ -95,8 +96,8 @@ export async function patchOrder(req: Request, res: Response) {
 }
 
 export async function removeOrder(req: Request, res: Response) {
-  const { id } = req.params;
-  const existedOrder = await findOrderById(Number(id));
+  const orderId= req.params.id;
+  const existedOrder = await findOrderById(orderId);
   if (!existedOrder) {
     return handleErrorResponse(res, new Error("Order not found"), 404);
   }

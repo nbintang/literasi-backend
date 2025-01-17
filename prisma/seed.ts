@@ -1,139 +1,117 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-const db = new PrismaClient();
+const prisma = new PrismaClient();
 
 async function main() {
   // Upsert categories
-  const category1 = await db.category.upsert({
-    where: { name: "Fiction" },
-    update: {},
+  // Create Users
+  const password = await bcrypt.hash('password', 10);
+  
+  const user = await prisma.user.upsert({
+    where: {
+      email: 'john.doe@example.com',
+    },
+    update: {}, 
     create: {
-      name: "Fiction",
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      password, 
+    },
+  });
+  const user2 = await prisma.user.upsert({
+    where: {
+      email: 'jane.doe@example.com', 
+    },
+    update: {}, 
+    create: {
+      name: 'Jane Doe',
+      email: 'jane.doe@example.com',
+      password, 
     },
   });
 
-  const category2 = await db.category.upsert({
-    where: { name: "Non-fiction" },
+  
+  const profile1 = await prisma.profile.upsert({
+    where: { userId: user.id },
     update: {},
     create: {
-      name: "Non-fiction",
+      image: 'https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_e1x30r.jpg',
+      fullname: 'John Doe Full Name',
+      bio: 'A brief bio about John Doe',
+      role: "ADMIN",
+      userId: user.id,
     },
   });
-
-  // Upsert authors
-  const author1 = await db.author.create({
-    data: {
-      name: "George Orwell",
-      bio: "English novelist and essayist, journalist, and critic.",
-    },
-  });
-
-  const author2 = await db.author.create({
-    data: {
-      name: "J.K. Rowling",
-      bio: "British author, best known for writing the Harry Potter series.",
-    },
-  });
-  const password = await bcrypt.hash("12345", 10);
-  // Upsert users
-  const atmin = await db.user.upsert({
-    where: { email: "john.doe@example.com" },
+  
+  const profile2 = await prisma.profile.upsert({
+    where: { userId: user2.id },
     update: {},
     create: {
-      name: "John Doe",
-      email: "johndoe@example.com",
-      password: password, // Make sure to hash the password in a real app
-      role: "ADMIN", // You can change this to 'ADMIN' for an admin user
-    },
-  });
-
-  const user2 = await db.user.upsert({
-    where: { email: "jane.smith@example.com" },
-    update: {},
-    create: {
-      name: "Jane Smith",
-      email: "janesmith@example.com",
-      password: password, // Again, hash the password in production
+      image: 'https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_e1x30r.jpg',
+      fullname: 'Jane Doe Full Name',
+      bio: 'A brief bio about Jane Doe',
       role: "USER",
+      userId: user2.id,
     },
   });
-  const image =
-    "https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_pb5vga.jpg";
-  // Upsert books
-  const book1 = await db.book.create({
+  
+
+  // Create Categories
+  const category = await prisma.category.upsert({
+    where: {
+      name: 'Fiction', // Unique constraint check
+    },
+    update: {},
+    create: {
+      name: 'Fiction',
+    },
+  });
+
+  // Create Books
+  const book = await prisma.book.create({
     data: {
-      title: "1984",
-      content,
-      description:
-        "A dystopian social science fiction novel and cautionary tale.",
+      title: 'The Great Adventure',
+      description: 'A book about a great adventure.',
       price: 19.99,
       stock: 100,
-      image,
-      author: {
-        connect: { id: author1.id },
-      },
-      category: {
-        connect: { id: category1.id },
-      },
-    },
-  });
-
-  const book2 = await db.book.create({
-    data: {
-      title: "Harry Potter and the Philosopher's Stone",
-      description: "The first book in the Harry Potter series.",
       content,
-      price: 25.99,
-      stock: 50,
-      image,
-      author: {
-        connect: { id: author2.id },
-      },
-      category: {
-        connect: { id: category1.id },
+      authorName: 'John Doe',
+      profileId: profile1.id, // This connects the book to the profile
+      image: 'https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_e1x30r.jpg',
+      categories: {
+        connect: { id: category.id },
       },
     },
   });
 
-  // Upsert an order
-  const order1 = await db.order.create({
+  // Create Orders
+  const order = await prisma.order.create({
     data: {
-      userId: user2.id,
-      totalPrice: 45.98, // 1984 + Harry Potter book price
+      totalPrice: 19.99,
+      orderedUserId: user2.id,
+      orderItems: {
+        create: [
+          {
+            bookId: book.id,
+            quantity: 1,
+          },
+        ],
+      },
     },
-  });
-
-  // Upsert order items
-  const orderItems = await db.orderItem.createMany({
-    data: [
-      {
-        orderId: order1.id,
-        bookId: book1.id,
-        quantity: 1,
-      },
-      {
-        orderId: order1.id,
-        bookId: book2.id,
-        quantity: 1,
-      },
-    ],
   });
 
   console.log({
-    category1,
-    category2,
-    author1,
-    author2,
-    atmin,
-    user2,
-    book1,
-    book2,
-    order1,
-    orderItems,
+    user,
+    profile1,
+    profile2,
+    
+    category,
+    book,
+    order,
   });
 }
 main()
-  .then(() => db.$disconnect())
+  .then(() => prisma.$disconnect())
   .catch((e) => {
     console.error(e);
     process.exit(1);

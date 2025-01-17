@@ -6,73 +6,71 @@ datasource db {
   provider = "mysql"
   url      = env("RAILWAY_MYSQL_URL")
 }
+
 //model changed at 17/01/2025
 model User {
-  id        Int      @id @default(autoincrement())
-  image     String?
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
+  id        String   @id @default(uuid())
+  name      String   @db.VarChar(50)
+  email     String
+  password  String   @db.VarChar(255)
+  profile   Profile? @relation("UserProfile")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  orders Order[]
+
+  @@unique([email])
 }
 
 model Profile {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(uuid())
   image       String?
-  fullname    String
-  bio         String   @db.VarChar(500)
-  collections Book[]
-  orders      Order[]
+  fullname    String?  @db.VarChar(100)
+  bio         String?  @db.VarChar(500)
+  role        Role     @default(USER)
+  collections Book[]   @relation("BookCollections")
+  userId      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-}
+  user        User?    @relation("UserProfile", fields: [userId], references: [id])
 
-model Author {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  bio       String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  books Book[]
+  @@unique([userId])
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
+  id        String   @id @default(uuid())
+  name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  books     Book[]   @relation("BookCategories")
 
-  books Book[]
+  @@unique([name])
 }
 
 model Book {
-  id          Int         @id @default(autoincrement())
-  title       String
+  id          String      @id @default(uuid())
+  image       String
+  title       String      @db.VarChar(50)
   description String      @db.VarChar(600)
   price       Decimal     @db.Decimal(10, 2)
   stock       Int         @default(0)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   content     String      @db.Text
-  authorId    Int
-  categoryId  Int
-  image       String
-  author      Author      @relation(fields: [authorId], references: [id])
-  category    Category    @relation(fields: [categoryId], references: [id])
-  profile     Profile     @relation(fields: [profileId], references: [id])
-  profileId   Int
+  authorName  String      @db.VarChar(100)
+  profileId   String
+  profile     Profile?    @relation("BookCollections", fields: [profileId], references: [id])
   orderItems  OrderItem[]
+  categories  Category[]  @relation("BookCategories")
+
+  @@index([title])
 }
 
 model OrderItem {
-  id       Int @id @default(autoincrement())
-  orderId  Int
-  bookId   Int
-  quantity Int @default(1)
-
+  id        String   @id @default(uuid())
+  orderId   String
+  bookId    String
+  quantity  Int      @default(1)
   order     Order    @relation(fields: [orderId], references: [id])
   book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -85,12 +83,11 @@ enum Role {
 }
 
 model Order {
-  id            Int      @id @default(autoincrement())
-  orderedUserId Int
-  totalPrice    Decimal  @db.Decimal(10, 2)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  orderedUser Profile     @relation(fields: [orderedUserId], references: [id])
-  orderItems  OrderItem[]
+  id            String      @id @default(uuid())
+  totalPrice    Decimal     @db.Decimal(10, 2)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  orderedUserId String
+  orderedUser   User        @relation(fields: [orderedUserId], references: [id])
+  orderItems    OrderItem[]
 }

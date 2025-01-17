@@ -2,7 +2,9 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { findUserByEmail, findUserById } from "../controller/repositories";
 import bcrypt from "bcrypt";
-import { User } from "@prisma/client";
+import { SafeUserPayload, UserPayload } from "../types";
+
+
 const initializeLocalPassport = () => {
   passport.use(
     new LocalStrategy(
@@ -13,9 +15,10 @@ const initializeLocalPassport = () => {
       async (email, password, done) => {
         try {
           const userExisted = await findUserByEmail(email);
-          if (!userExisted) {
+          if (!userExisted || !userExisted.profile) {
             return done(null, false, { message: "User not found" });
           }
+
           const isPwValid = await bcrypt.compare(
             password,
             userExisted.password
@@ -23,11 +26,11 @@ const initializeLocalPassport = () => {
           if (!isPwValid) {
             return done(null, false, { message: "Password is not valid" });
           }
-          const filterUser = {
+          const filterUser  = {
             id: userExisted.id,
             email: userExisted.email,
-            name: userExisted.name,
-            role: userExisted.role,
+            username: userExisted.name,
+            role: userExisted.profile.role,
           };
           return done(null, filterUser);
         } catch (error) {
@@ -37,18 +40,21 @@ const initializeLocalPassport = () => {
     )
   );
   passport.serializeUser((user: Express.User, done) => {
-    done(null, (user as User).id);
+    done(null, (user as UserPayload).id);
   });
 
-  passport.deserializeUser(async (id: number, done) => {
+  passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await findUserById(id);
       if (!user) return done(null, false);
+
       const safeUser = {
         id: user.id,
         email: user.email,
-        name: user.name,
-      };
+        username: user.name,
+        image: user.image,
+        role: user.role,
+      } as SafeUserPayload;
 
       done(null, safeUser);
     } catch (error) {

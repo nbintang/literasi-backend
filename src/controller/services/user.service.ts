@@ -15,13 +15,12 @@ export async function getUserById(req: Request, res: Response): Promise<void> {
     return handleErrorResponse(res, error);
   }
 
-  const user = await findUserById(Number(id));
+  const user = await findUserById(id)
   if (!user) {
     const error = new Error("User not found");
     return handleErrorResponse(res, error, 404);
   }
 
+
   res.status(200).json({ success: true, data: user });
 }
-
-

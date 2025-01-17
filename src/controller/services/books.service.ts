@@ -30,7 +30,7 @@ export async function getBooks(req: Request, res: Response) {
 
 export async function getBookById(req: Request, res: Response) {
   const { id } = req.params;
-  const book = await findBookById(Number(id));
+  const book = await findBookById(id);
   if (!book) {
     res.status(404).json({ success: false, message: "Book not found" });
     return;
@@ -41,7 +41,7 @@ export async function getBookById(req: Request, res: Response) {
 export async function getBooksByCategory(req: Request, res: Response) {
   try {
     const name = req.params.name as string;
-    if(!name) return handleErrorResponse(res, new Error("Genre not found"));
+    if (!name) return handleErrorResponse(res, new Error("Genre not found"));
     const { page, pageSize } = req.query || {};
     const pageNum = Number(page) || 1;
     const pageSizeNum = Number(pageSize) || 10;
@@ -67,8 +67,8 @@ export async function postBooks(req: Request, res: Response) {
     const {
       title,
       description,
-      author,
-      category,
+      authorName,
+      categories,
       content,
       price,
       stock,
@@ -87,8 +87,8 @@ export async function postBooks(req: Request, res: Response) {
       title,
       description,
       image: secure_url,
-      author,
-      category,
+      authorName,
+      categories,
       content,
       price: Number(price),
       stock: Number(stock),
@@ -105,21 +105,21 @@ export async function putBooks(req: Request, res: Response) {
     const {
       title,
       description,
-      author,
-      category,
+      authorName,
+      categories,
       content,
       stock,
       price,
     }: InputBooksProps = req.body;
     const image = req.file;
-    const existedBook = await findBookById(Number(id));
+    const existedBook = await findBookById(id);
     if (!existedBook) {
       return handleErrorResponse(res, new Error("Book not found"), 404);
     }
     const existedImgPublicId = await extractPublicId(
       existedBook.image as string
     );
-    if (!image || !author || !category) {
+    if (!image || !authorName || !categories) {
       return handleErrorResponse(
         res,
         new Error("Missing required fields"),
@@ -130,12 +130,12 @@ export async function putBooks(req: Request, res: Response) {
       buffer: image.buffer,
       public_id: existedImgPublicId,
     });
-    const updatedBook = await updateBook(Number(id), {
+    const updatedBook = await updateBook(id, {
       title,
       description,
       image: secure_url,
-      author: author,
-      category: category,
+      authorName,
+      categories,
       stock: Number(stock),
       content,
       price: Number(price),
@@ -149,6 +149,6 @@ export async function putBooks(req: Request, res: Response) {
 
 export async function removeBook(req: Request, res: Response) {
   const { id } = req.params;
-  await deleteBooks(Number(id));
+  await deleteBooks(id);
   res.status(200).json({ success: true, message: "Book deleted successfully" });
 }
