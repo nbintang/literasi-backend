@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = manageCloudinaryImages;
+exports.uploadImgToCloudinary = uploadImgToCloudinary;
 const cld_1 = require("../lib/cld");
 async function manageCloudinaryImages({ buffer, folder = "book-covers", public_id, }) {
     if (public_id) {

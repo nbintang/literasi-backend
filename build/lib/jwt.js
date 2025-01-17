@@ -6,11 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateAccessToken = generateAccessToken;
 exports.generateRefreshToken = generateRefreshToken;
 exports.verifyToken = verifyToken;
+exports.generateTokens = generateTokens;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 async function generateAccessToken({ id, role, time = "15s", }) {
     return jsonwebtoken_1.default.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: time });
 }
-async function generateRefreshToken({ id, role }) {
+async function generateRefreshToken({ id, role, }) {
     return jsonwebtoken_1.default.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "1d" });
 }
 async function verifyToken(token) {
@@ -20,5 +21,15 @@ async function verifyToken(token) {
     catch (error) {
         throw new Error("Invalid or expired token");
     }
+}
+async function generateTokens({ id, role, }) {
+    const [accessToken, refreshToken] = await Promise.all([
+        generateAccessToken({ id, role }),
+        generateRefreshToken({ id, role }),
+    ]);
+    return {
+        accessToken,
+        refreshToken,
+    };
 }
 //# sourceMappingURL=jwt.js.map

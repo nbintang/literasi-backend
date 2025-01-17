@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.orderItemRoute = void 0;
 const express_1 = require("express");
-const order_item_service_1 = require("../core/services/order-item.service");
+const services_1 = require("../controller/services");
 const route = (0, express_1.Router)();
 exports.orderItemRoute = route;
-route.get("/:id", order_item_service_1.getOrderItemById);
-route.delete("/:id", order_item_service_1.deleteOrderItem);
+route.get("/:id", services_1.getOrderItemById);
+route.delete("/:id", services_1.deleteOrderItem);
 //# sourceMappingURL=order-item.route.js.map
