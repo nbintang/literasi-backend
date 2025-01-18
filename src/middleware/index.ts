@@ -1,31 +1,23 @@
 import passport from "passport";
-import { findUserById } from "../controller/repositories";
-import { ExtractJwt, Strategy as JWTStrategy } from "passport-jwt";
-import { SafeUserPayload } from "../types";
+import { UserPayload } from "../types";
+import { NextFunction, Request, Response } from "express";
+import { handleErrorResponse } from "../helper/error-response";
 
-passport.use(
-  new JWTStrategy(
-    {
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET!,
-    },
-    async (jwtPayload, done) => {
-      try {
-        const user = await findUserById(jwtPayload.id);
-        if (!user) return done(null, false, { message: "User not found" });
-        const safeUser = {
-          id: user.id,
-          image: user.image,
-          username: user.name,
-          email: user.email,
-        } as SafeUserPayload;
-
-        return done(null, safeUser);
-      } catch (error) {
-        return done(error);
+const authMiddleware = (strategy: string) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate(
+      strategy,
+      { failWithError: true },
+      (err: Error, user: UserPayload, info: any) => {
+        if (err) return next(err);
+        if (!user) {
+          return handleErrorResponse(res, new Error("Unauthorized"), 401);
+        }
+        req.user = user;
+        return next();
       }
-    }
-  )
-);
+    )(req, res, next);
+  };
+};
 
-export const authMiddleware = passport.authenticate("jwt", { session: false });
+export default authMiddleware;

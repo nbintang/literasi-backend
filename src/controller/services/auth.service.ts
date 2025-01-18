@@ -9,7 +9,6 @@ import {
 } from "../../lib/jwt";
 import { CustomJwtPayload, RequestWithToken } from "../../types";
 import { handleErrorResponse } from "../../helper/error-response";
-import authenticateUser from "../../helper/authenticate-user";
 
 export async function signUp(req: Request, res: Response) {
   const { email, password, name } = req.body;
@@ -38,13 +37,11 @@ export async function signUp(req: Request, res: Response) {
 }
 
 export async function signIn(req: Request, res: Response, next: NextFunction) {
-  const user = await authenticateUser(req, res);
-
   try {
-    const { accessToken, refreshToken } = await generateTokens({
-      id: user.id.toString(),
-      role: user.role!,
-    });
+    const { accessToken, refreshToken } = req.user as {
+      accessToken: string;
+      refreshToken: string;
+    };
     if (accessToken && refreshToken) {
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
@@ -53,6 +50,7 @@ export async function signIn(req: Request, res: Response, next: NextFunction) {
         maxAge: 24 * 60 * 60 * 1000,
       });
     }
+
     res.status(200).json({
       success: true,
       message: "Welcome!...",
@@ -60,7 +58,11 @@ export async function signIn(req: Request, res: Response, next: NextFunction) {
       refreshToken,
     });
   } catch (error) {
-    handleErrorResponse(res, error as Error);
+    console.error("Error in 'signIn", error); // Log the error to check its details
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 }
 

@@ -19,6 +19,8 @@ export interface UserPayload {
   id: string;
   email: string;
   username: string;
+  accessToken?: string;
+  refreshToken?: string;
   role?: string;
 }
 

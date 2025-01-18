@@ -3,13 +3,12 @@ import cors from "cors";
 import routes from "./routes";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import session from "express-session";
 import passport from "passport";
 import initializeLocalPassport from "./lib/passport-config";
+import session from "express-session";
 const app = express();
 const port = 3001;
 dotenv.config();
-
 
 initializeLocalPassport();
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
@@ -17,9 +16,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   session({
-    secret: process.env.JWT_SECRET as string,
-    resave: false,
-    saveUninitialized: false,
+    secret: process.env.SESSION_SECRET as string,
+    resave: true,
+    saveUninitialized: true,
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV !== "development",
@@ -31,7 +30,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.get("/", (_, res) => {
-  res.send("Hello World!");
+  res.json({ message: "Hello World" });
 });
 
 app.use("/api", routes);
