@@ -9,37 +9,36 @@ datasource db {
 
 //model changed at 17/01/2025
 model User {
-  id        String   @id @default(uuid())
-  name      String   @db.VarChar(50)
-  email     String
-  password  String   @db.VarChar(255)
-  profile   Profile? @relation("UserProfile")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  orders Order[]
+  id              String   @id @default(uuid())
+  name            String   @db.VarChar(50)
+  email           String
+  password        String   @db.VarChar(255)
+  profile         Profile? @relation("UserProfile")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  bookCollections Book[]   @relation("BookCollections")
+  orders          Order[]
 
   @@unique([email])
 }
 
 model Profile {
-  id          String   @id @default(uuid())
-  image       String?
-  fullname    String?  @db.VarChar(100)
-  bio         String?  @db.VarChar(500)
-  role        Role     @default(USER)
-  collections Book[]   @relation("BookCollections")
-  userId      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User?    @relation("UserProfile", fields: [userId], references: [id])
+  id        String   @id @default(uuid())
+  image     String?
+  fullname  String?  @db.VarChar(100)
+  bio       String?  @db.VarChar(500)
+  role      Role     @default(USER)
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation("UserProfile", fields: [userId], references: [id])
 
   @@unique([userId])
 }
 
 model Category {
   id        String   @id @default(uuid())
-  name      String
+  name      String   @db.VarChar(50)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   books     Book[]   @relation("BookCategories")
@@ -58,8 +57,8 @@ model Book {
   updatedAt   DateTime    @updatedAt
   content     String      @db.Text
   authorName  String      @db.VarChar(100)
-  profileId   String
-  profile     Profile?    @relation("BookCollections", fields: [profileId], references: [id])
+  userId      String?
+  user        User?       @relation("BookCollections", fields: [userId], references: [id])
   orderItems  OrderItem[]
   categories  Category[]  @relation("BookCategories")
 

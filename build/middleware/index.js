@@ -3,29 +3,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authMiddleware = void 0;
 const passport_1 = __importDefault(require("passport"));
-const repositories_1 = require("../controller/repositories");
-const passport_jwt_1 = require("passport-jwt");
-passport_1.default.use(new passport_jwt_1.Strategy({
-    jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.JWT_SECRET,
-}, async (jwtPayload, done) => {
-    try {
-        const user = await (0, repositories_1.findUserById)(jwtPayload.id);
-        if (!user)
-            return done(null, false, { message: "User not found" });
-        const safeUser = {
-            id: user.id,
-            image: user.image,
-            username: user.name,
-            email: user.email,
-        };
-        return done(null, safeUser);
-    }
-    catch (error) {
-        return done(error);
-    }
-}));
-exports.authMiddleware = passport_1.default.authenticate("jwt", { session: false });
+const error_response_1 = require("../helper/error-response");
+const authMiddleware = (strategy) => {
+    return (req, res, next) => {
+        passport_1.default.authenticate(strategy, { failWithError: true }, (err, user, info) => {
+            if (err)
+                return next(err);
+            if (!user) {
+                return (0, error_response_1.handleErrorResponse)(res, new Error("Unauthorized"), 401);
+            }
+            req.user = user;
+            return next();
+        })(req, res, next);
+    };
+};
+exports.default = authMiddleware;
 //# sourceMappingURL=index.js.map

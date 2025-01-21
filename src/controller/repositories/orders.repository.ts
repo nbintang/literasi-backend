@@ -131,7 +131,9 @@ export const updateOrderById = async ({
 };
 
 export const deleteOrderById = async (id: string) => {
+  
   return await db.$transaction(async (tx) => {
+
     const orderItem = await tx.orderItem.findMany({ where: { orderId: id } });
 
     await Promise.all(

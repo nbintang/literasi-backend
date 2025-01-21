@@ -3,7 +3,7 @@ import { db } from "../../lib/db";
 export const deleteOrderItemById = async (id: string) => {
   return await db.$transaction(async (tx) => {
     const orderItem = await tx.orderItem.findUnique({ where: { id } });
-
+    if(!orderItem) return null;
     await tx.book.update({
       where: { id: orderItem?.bookId },
       data: { stock: { increment: orderItem?.quantity } },
@@ -16,6 +16,7 @@ export const deleteOrderItemById = async (id: string) => {
 };
 
 export const findOrderItemById = async (id: string) => {
+
   const orderItem = await db.orderItem.findUnique({
     where: { id },
     select: {
@@ -35,6 +36,8 @@ export const findOrderItemById = async (id: string) => {
       book: { select: { title: true, price: true, description: true } },
     },
   });
+
+  if(!orderItem) return null;
 
   return {
     id: orderItem?.id,

@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import {
   getBookById,
@@ -7,12 +6,15 @@ import {
   postBooks,
   removeBook,
 } from "../controller/services";
-import upload from "../lib/upload";
-const route =Router()
+import upload from "../helper/validate-file";
+import validateSingleFile from "../helper/validate-file";
+import { validateSchema } from "../helper/validate-schema";
+import { bookSchema } from "../schemas/book-schema";
+const route = Router();
 
 route.get("/", getBooks);
 route.get("/:id", getBookById);
-route.post("/", upload.single("image"), postBooks);
-route.put("/:id", upload.single("image"), putBooks);
+route.post("/", validateSingleFile, validateSchema(bookSchema), postBooks);
+route.put("/:id", validateSingleFile, validateSchema(bookSchema), putBooks);
 route.delete("/:id", removeBook);
 export { route as bookRoute };

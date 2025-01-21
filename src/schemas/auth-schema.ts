@@ -18,3 +18,4 @@ export const signupSchema = z.object({
     message: "Name must be at most 50 characters",
   }),
 })
+

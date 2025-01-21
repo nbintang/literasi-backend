@@ -1,9 +1,25 @@
-import { Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
-export function handleErrorResponse(
-  res: Response,
-  error: Error,
-  status?: number
-) {
-  res.status(status || 500).json({ success: false, message: error.message });
+export class CustomError extends Error {
+  public status: number;
+  constructor(message: string, status = 500) {
+    super(message);
+    this.status = status;
+    Error.captureStackTrace(this, this.constructor);
+  }
 }
+
+export function errorHandler(
+  err: CustomError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  if (res.headersSent) return next(err);
+  const statusCode = err.status || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+}
+

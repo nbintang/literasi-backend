@@ -1,5 +1,12 @@
 import { Request } from "express";
 import { JwtPayload } from "jsonwebtoken";
+declare global {
+  namespace Express {
+    interface Request {
+      user?: SafeUserPayload | UserPayload; // Extend the Request type with the `user` property
+    }
+  }
+}
 export interface RequestWithToken extends Request {
   cookies: {
     refreshToken?: string;
@@ -10,11 +17,6 @@ export interface CustomJwtPayload extends JwtPayload {
   id: string;
   role: string;
 }
-export interface RequestWithPayload extends Request {
-  id?: string;
-  role?: string;
-}
-
 export interface UserPayload {
   id: string;
   email: string;
@@ -24,6 +26,9 @@ export interface UserPayload {
   role?: string;
 }
 
-export interface SafeUserPayload extends UserPayload {
+export interface SafeUserPayload  {
+  id: string;
   image?: string;
+  email?: string;
+  username?: string;
 }

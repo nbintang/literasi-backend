@@ -76,7 +76,7 @@ async function main() {
       stock: 100,
       content,
       authorName: 'John Doe',
-      profileId: profile1.id, // This connects the book to the profile
+      userId: user.id, // This connects the book to the profile
       image: 'https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_e1x30r.jpg',
       categories: {
         connect: { id: category.id },

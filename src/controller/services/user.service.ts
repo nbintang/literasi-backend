@@ -1,26 +1,24 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { findUserById, findUsers } from "../repositories";
-import { handleErrorResponse } from "../../helper/error-response";
+import { CustomError } from "../../helper/error-response";
 
 export async function getUsers(req: Request, res: Response) {
   const users = await findUsers();
   res.status(200).json({ success: true, data: users });
 }
 
-export async function getUserById(req: Request, res: Response): Promise<void> {
+export async function getUserById(req: Request, res: Response, next: NextFunction): Promise<void> {
+try {
   const { id } = req.params;
 
-  if (!id) {
-    const error = new Error("Invalid user id");
-    return handleErrorResponse(res, error);
-  }
+  if (!id) throw new CustomError("User id not found", 404);
 
   const user = await findUserById(id)
-  if (!user) {
-    const error = new Error("User not found");
-    return handleErrorResponse(res, error, 404);
-  }
+  if (!user) throw new CustomError("User not found", 404);
 
 
   res.status(200).json({ success: true, data: user });
+} catch (error) {
+  next(error);
+}
 }

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import {
   findBooks,
   findBookById,
@@ -7,7 +7,7 @@ import {
   updateBook,
   deleteBooks,
 } from "../repositories";
-import { handleErrorResponse } from "../../helper/error-response";
+import { CustomError } from "../../helper/error-response";
 import { InputBooksProps } from "../../types/books";
 import manageCloudinaryImages from "../../helper/manage-cloudinary-img";
 import { extractPublicId } from "cloudinary-build-url";
@@ -16,9 +16,7 @@ export async function getBooks(req: Request, res: Response) {
   const { page, pageSize } = req.query || {};
   const pageNum = Number(page) || 1;
   const pageSizeNum = Number(pageSize) || 10;
-
   const skip = (pageNum - 1) * pageSizeNum;
-
   const { books, total } = await findBooks(pageSizeNum, skip);
   res.status(200).json({
     success: true,
@@ -28,20 +26,28 @@ export async function getBooks(req: Request, res: Response) {
   });
 }
 
-export async function getBookById(req: Request, res: Response) {
-  const { id } = req.params;
-  const book = await findBookById(id);
-  if (!book) {
-    res.status(404).json({ success: false, message: "Book not found" });
-    return;
+export async function getBookById(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { id } = req.params;
+    const book = await findBookById(id);
+    if (!book) throw new CustomError("Book not found", 404);
+    res.status(200).json({ success: true, data: book });
+  } catch (error) {
+    next(error);
   }
-  res.status(200).json({ success: true, data: book });
 }
 
-export async function getBooksByCategory(req: Request, res: Response) {
+export async function getBooksByCategory(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const name = req.params.name as string;
-    if (!name) return handleErrorResponse(res, new Error("Genre not found"));
     const { page, pageSize } = req.query || {};
     const pageNum = Number(page) || 1;
     const pageSizeNum = Number(pageSize) || 10;
@@ -51,18 +57,21 @@ export async function getBooksByCategory(req: Request, res: Response) {
       take: pageSizeNum,
       skip,
     });
-    if (!book) {
-      return handleErrorResponse(res, new Error("Book not found"));
-    }
+    if (!book) throw new CustomError("Book not found", 404);
     res
       .status(200)
       .json({ success: true, page: pageNum, genre: name, data: book });
   } catch (error) {
-    handleErrorResponse(res, error as Error);
+    console.log(error);
+    next(error);
   }
 }
 
-export async function postBooks(req: Request, res: Response) {
+export async function postBooks(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const {
       title,
@@ -74,16 +83,14 @@ export async function postBooks(req: Request, res: Response) {
       stock,
     }: InputBooksProps = req.body;
     const image = req.file;
+    const userId = req.user?.id;
 
-    if (!image) {
-      const error = new Error("Image not found");
-      return handleErrorResponse(res, error);
-    }
+    if (!image) throw new CustomError("No image provided", 404);
     const { public_id, secure_url } = await manageCloudinaryImages({
       buffer: image.buffer,
     });
 
-    const book = await createBook({
+    const book = await createBook(userId as string, {
       title,
       description,
       image: secure_url,
@@ -95,11 +102,16 @@ export async function postBooks(req: Request, res: Response) {
     });
     res.status(200).json({ success: true, data: book });
   } catch (error) {
-    handleErrorResponse(res, error as Error);
+    console.log(error);
+    next(error);
   }
 }
 
-export async function putBooks(req: Request, res: Response) {
+export async function putBooks(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const { id } = req.params;
     const {
@@ -112,43 +124,52 @@ export async function putBooks(req: Request, res: Response) {
       price,
     }: InputBooksProps = req.body;
     const image = req.file;
+    const userId = req.user?.id;
     const existedBook = await findBookById(id);
-    if (!existedBook) {
-      return handleErrorResponse(res, new Error("Book not found"), 404);
-    }
+    if (!existedBook) throw new CustomError("Book not found", 404);
     const existedImgPublicId = await extractPublicId(
       existedBook.image as string
     );
-    if (!image || !authorName || !categories) {
-      return handleErrorResponse(
-        res,
-        new Error("Missing required fields"),
-        400
-      );
-    }
+    if (!image || !authorName || !categories)
+      throw new CustomError("Please provide all required fields", 404);
     const { secure_url } = await manageCloudinaryImages({
       buffer: image.buffer,
       public_id: existedImgPublicId,
     });
-    const updatedBook = await updateBook(id, {
-      title,
-      description,
-      image: secure_url,
-      authorName,
-      categories,
-      stock: Number(stock),
-      content,
-      price: Number(price),
-    });
+    const updatedBook = await updateBook(
+      userId as string,
+      id,
+      {
+        title,
+        description,
+        image: secure_url,
+        authorName,
+        categories,
+        stock: Number(stock),
+        content,
+        price: Number(price),
+      }
+    );
     res.status(200).json({ success: true, data: updatedBook });
   } catch (error) {
     console.error("Error updating book:", error);
-    return handleErrorResponse(res, error as Error);
+    next(error);
   }
 }
 
-export async function removeBook(req: Request, res: Response) {
-  const { id } = req.params;
-  await deleteBooks(id);
-  res.status(200).json({ success: true, message: "Book deleted successfully" });
+export async function removeBook(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { id } = req.params;
+    const deletedBook = await deleteBooks(id);
+    if (!deletedBook) throw new CustomError("Book not found", 404);
+    res
+      .status(200)
+      .json({ success: true, message: "Book deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
 }

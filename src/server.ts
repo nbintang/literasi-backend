@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import passport from "passport";
 import initializeLocalPassport from "./lib/passport-config";
 import session from "express-session";
+import { errorHandler } from "./helper/error-response";
 const app = express();
 const port = 3001;
 dotenv.config();
@@ -34,7 +35,7 @@ app.get("/", (_, res) => {
 });
 
 app.use("/api", routes);
-
+app.use(errorHandler);
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });

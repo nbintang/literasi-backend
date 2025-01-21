@@ -11,7 +11,6 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const repositories_1 = require("../repositories");
 const jwt_1 = require("../../lib/jwt");
 const error_response_1 = require("../../helper/error-response");
-const authenticate_user_1 = __importDefault(require("../../helper/authenticate-user"));
 async function signUp(req, res) {
     const { email, password, name } = req.body;
     const userExists = await (0, repositories_1.findUserByEmail)(email);
@@ -38,12 +37,8 @@ async function signUp(req, res) {
     }
 }
 async function signIn(req, res, next) {
-    const user = await (0, authenticate_user_1.default)(req, res);
     try {
-        const { accessToken, refreshToken } = await (0, jwt_1.generateTokens)({
-            id: user.id.toString(),
-            role: user.role,
-        });
+        const { accessToken, refreshToken } = req.user;
         if (accessToken && refreshToken) {
             res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
@@ -60,7 +55,11 @@ async function signIn(req, res, next) {
         });
     }
     catch (error) {
-        (0, error_response_1.handleErrorResponse)(res, error);
+        console.error("Error in 'signIn", error); // Log the error to check its details
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
     }
 }
 async function refreshAccessToken(req, res, next) {

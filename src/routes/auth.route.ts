@@ -8,7 +8,6 @@ import {
 import authMiddleware from "../middleware";
 import { validateSchema } from "../helper/validate-schema";
 import { signinSchema, signupSchema } from "../schemas/auth-schema";
-import passport from "passport";
 const route = Router();
 
 route.post("/signup", validateSchema(signupSchema), signUp);

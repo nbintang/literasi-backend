@@ -1,30 +1,21 @@
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import { createUser, findUserByEmail } from "../repositories";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  generateTokens,
-  verifyToken,
-} from "../../lib/jwt";
+import { generateAccessToken, verifyToken } from "../../lib/jwt";
 import { CustomJwtPayload, RequestWithToken } from "../../types";
-import { handleErrorResponse } from "../../helper/error-response";
+import { CustomError } from "../../helper/error-response";
 
-export async function signUp(req: Request, res: Response) {
+export async function signUp(req: Request, res: Response, next: NextFunction) {
   const { email, password, name } = req.body;
   const userExists = await findUserByEmail(email);
-  if (userExists)
-    return handleErrorResponse(res, new Error("User already exists"));
   try {
+    if (userExists) throw new CustomError("User already exists", 400);
     const hashPw = await bcrypt.hash(password, 10);
     const user = await createUser({ email, password: hashPw, name });
 
-    if (!user)
-      return handleErrorResponse(res, new Error("Failed to create signup"));
+    if (!user) throw new CustomError("User not created", 500);
     req.logIn(user, (err) => {
-      if (err) {
-        return handleErrorResponse(res, err);
-      }
+      if (err) return next(err);
       res.status(200).json({
         success: true,
         message: "Welcome!...",
@@ -32,37 +23,37 @@ export async function signUp(req: Request, res: Response) {
       });
     });
   } catch (error) {
-    handleErrorResponse(res, error as Error);
+    console.error("Error in 'signUp", error); // Log the error to check its details
+    next(error);
   }
 }
 
 export async function signIn(req: Request, res: Response, next: NextFunction) {
   try {
-    const { accessToken, refreshToken } = req.user as {
-      accessToken: string;
-      refreshToken: string;
-    };
-    if (accessToken && refreshToken) {
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV !== "development",
-        sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
-        maxAge: 24 * 60 * 60 * 1000,
-      });
-    }
+    const user = req.user;
+    if (!user) throw new CustomError("Unauthorized", 401);
+    if ("accessToken" in user && "refreshToken" in user) {
+      const { accessToken, refreshToken } = user;
 
-    res.status(200).json({
-      success: true,
-      message: "Welcome!...",
-      accessToken,
-      refreshToken,
-    });
+      if (accessToken && refreshToken) {
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== "development",
+          sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+          maxAge: 24 * 60 * 60 * 1000,
+        });
+
+        res.status(200).json({
+          success: true,
+          message: "Welcome!...",
+          accessToken,
+          refreshToken,
+        });
+      }
+    }
   } catch (error) {
     console.error("Error in 'signIn", error); // Log the error to check its details
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    next(error);
   }
 }
 
@@ -72,11 +63,8 @@ export async function refreshAccessToken(
   next: NextFunction
 ) {
   const { refreshToken } = req.cookies;
-  if (!refreshToken) {
-    const error = new Error("Refresh token not found");
-    return handleErrorResponse(res, error, 404);
-  }
   try {
+    if (!refreshToken) throw new CustomError("Refresh token not found", 404);
     const decode = (await verifyToken(refreshToken)) as CustomJwtPayload;
 
     const accessToken = await generateAccessToken({
@@ -87,17 +75,19 @@ export async function refreshAccessToken(
     res.status(200).json({ success: true, accessToken });
   } catch (error) {
     res.clearCookie("refreshToken");
-    return handleErrorResponse(res, error as Error, 401);
+    res.clearCookie("accessToken");
+    next(error);
   }
 }
 
-export async function signOut(req: Request, res: Response) {
+export async function signOut(req: Request, res: Response, next: NextFunction) {
+try {
   const { refreshToken } = req.cookies;
-  if (!refreshToken) {
-    const error = new Error("Refresh token not found");
-    return handleErrorResponse(res, error, 404);
-  }
+  if (!refreshToken) throw new CustomError("Refresh token not found", 404);
   res.clearCookie("refreshToken");
   res.clearCookie("accessToken");
   res.status(200).json({ message: "Sign out successfully" });
+} catch (error) {
+  next(error)
+}
 }

@@ -24,7 +24,6 @@ export const findBooks = async (take: number, skip: number) => {
   });
   const mutableBooks = await books.map((book) => ({
     ...book,
-    author: book.authorName,
     categories: book.categories.map((category) => category.name).join(", "),
   }));
   return {
@@ -36,23 +35,14 @@ export const findBooks = async (take: number, skip: number) => {
 export const findBookById = async (id: string) => {
   const book = await db.book.findUnique({
     where: { id },
-    select: {
-      id: true,
-      title: true,
-      image: true,
-      description: true,
-      price: true,
-      stock: true,
-      content: true,
-      authorName: true,
+    include: {
       categories: { select: { name: true } },
-      createdAt: true,
-      updatedAt: true,
     },
   });
+
+  if (!book) return null;
   return {
     ...book,
-    author: book?.authorName,
     categories: book?.categories.map((category) => category.name).join(", "),
   };
 };
@@ -78,8 +68,9 @@ export const findBooksByCategory = async ({
           image: true,
           description: true,
           price: true,
-        authorName: true,
-        }}
+          authorName: true,
+        },
+      },
     },
     take,
     skip,
@@ -87,12 +78,13 @@ export const findBooksByCategory = async ({
 
   const mutableCategoryBooks = await categoryBooks?.books.map((book) => ({
     ...book,
-    author: book.authorName,
   }));
   return mutableCategoryBooks;
 };
 
-export const createBook = async ({
+export const createBook = async (
+  userId: string,
+  {
   title,
   description,
   image,
@@ -100,8 +92,9 @@ export const createBook = async ({
   content,
   stock,
   categories,
-  authorName
+  authorName,
 }: InputBooksProps) => {
+  if(!image) return null;
   const createdBook = await db.book.create({
     data: {
       title,
@@ -111,19 +104,22 @@ export const createBook = async ({
       stock,
       content,
       authorName,
+      userId,
       categories: {
         connectOrCreate: categories.map((category) => ({
-          where: { name: category },
-          create: { name: category },
-        })), 
+          where: { name: category.toLowerCase() },
+          create: { name: category.toLowerCase() },
+        })),
       },
     },
   });
   const book = await findBookById(createdBook.id);
+  if (!book) return null;
   return book;
 };
 
 export const updateBook = async (
+  userId: string,
   id: string,
   {
     title,
@@ -137,19 +133,20 @@ export const updateBook = async (
   }: InputBooksProps
 ) => {
   const updatedBook = await db.book.update({
-    where: {id},
+    where: { id },
     data: {
       title,
       description,
       image,
       price,
       stock,
+      userId,
       content,
       authorName,
       categories: {
         connectOrCreate: categories.map((category) => ({
-          where: { name: category },
-          create: { name: category },
+          where: { name: category.toLowerCase() },
+          create: { name: category.toLowerCase() },
         })),
       },
     },
@@ -158,14 +155,19 @@ export const updateBook = async (
   return book;
 };
 
-export const deleteBooks = async (id: string) =>
-  await db.book.delete({ where: { id } });
+export const deleteBooks = async (id: string) => {
+  const existedBook = await findBookById(id);
+  if (!existedBook) return null;
+  const deletedBook = await db.book.delete({ where: { id: existedBook.id } });
+  return deletedBook;
+};
 
 export const getBooksByIds = async (bookIds: string[]) => {
-  return await db.book.findMany({
+  
+  const books =   await db.book.findMany({
     where: {
       id: {
-        in: bookIds,
+        in: bookIds || [],
       },
     },
     select: {
@@ -175,6 +177,9 @@ export const getBooksByIds = async (bookIds: string[]) => {
       title: true,
     },
   });
+
+  if(!books) return null;
+  return books;
 };
 export const updateBookStock = async (bookId: string, quantity: number) => {
   return await db.book.update({
