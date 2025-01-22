@@ -17,6 +17,8 @@ route.post(
   authMiddleware("local"),
   signIn
 );
+
+route.post("/verify-email", )
 route.post("/signout", authMiddleware("jwt"), signOut);
 route.post("/refresh-token", refreshAccessToken);
 export { route as authRoute };

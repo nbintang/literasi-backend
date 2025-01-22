@@ -1,27 +1,37 @@
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
-import { createUser, findUserByEmail } from "@/controller/repositories";
+import {
+  createUser,
+  findIfEmailExist,
+  findUserByEmail,
+  updateUserIsverified,
+} from "@/controller/repositories";
 import { generateAccessToken, verifyToken } from "@/lib/jwt";
 import { CustomJwtPayload, RequestWithToken } from "@/types";
 import { CustomError } from "@/helper/error-response";
+import { generateOtp, generateOTps, genrateExpirationTime } from "@/helper/otp";
+import sendEmail from "@/lib/mail";
+import { createToken, findToken } from "../repositories/token.repository";
 
 export async function signUp(req: Request, res: Response, next: NextFunction) {
   const { email, password, name } = req.body;
-  const userExists = await findUserByEmail(email);
   try {
+    const userExists = await findUserByEmail(email);
     if (userExists) throw new CustomError("User already exists", 400);
     const hashPw = await bcrypt.hash(password, 10);
     const user = await createUser({ email, password: hashPw, name });
+    if (!user) throw new CustomError("Sign up failed", 500);
+    const { otp, expiresAt } = generateOTps();
+    const newToken = await createToken(otp, user.id.toString(), expiresAt);
 
-    if (!user) throw new CustomError("User not created", 500);
-    req.logIn(user, (err) => {
-      if (err) return next(err);
-      res.status(200).json({
-        success: true,
-        message: "Welcome!...",
-        user,
-      });
+    await sendEmail({
+      to: email,
+      subject: "Verify Your Email",
+      text: `Hi ${name},\n\nPlease verify your email by entering the following OTP: ${otp}\n\nBest regards,\nYour Team`,
     });
+    res
+      .status(200)
+      .json({ success: true, message: "Please check your email to verify" });
   } catch (error) {
     console.error("Error in 'signUp", error); // Log the error to check its details
     next(error);
@@ -81,13 +91,37 @@ export async function refreshAccessToken(
 }
 
 export async function signOut(req: Request, res: Response, next: NextFunction) {
-try {
-  const { refreshToken } = req.cookies;
-  if (!refreshToken) throw new CustomError("Refresh token not found", 404);
-  res.clearCookie("refreshToken");
-  res.clearCookie("accessToken");
-  res.status(200).json({ message: "Sign out successfully" });
-} catch (error) {
-  next(error)
+  try {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) throw new CustomError("Refresh token not found", 404);
+    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken");
+    res.status(200).json({ message: "Sign out successfully" });
+  } catch (error) {
+    next(error);
+  }
 }
+
+export async function verifyEmailToken(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { email, token } = req.body;
+  try {
+    const user = await findIfEmailExist(email);
+    if (!user)
+      throw new CustomError("Sign up failed, Please to sign up first", 404);
+    if (user.isVerified) throw new CustomError("Email already verified", 400);
+    const isTokenExist = await findToken(token);
+    if (!isTokenExist) throw new CustomError("Token not found", 404);
+    const isTokenExpired = isTokenExist.expiresAt < new Date(); // Check if token is expired more than 5 minutes
+    if (isTokenExpired) throw new CustomError("Token expired", 400);
+    await updateUserIsverified(user.id.toString(), true);
+    res
+      .status(200)
+      .json({ success: true, message: "Email verified successfully, Try to sign in" });
+  } catch (error) {
+    next(error);
+  }
 }

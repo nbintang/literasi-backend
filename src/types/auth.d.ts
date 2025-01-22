@@ -16,6 +16,7 @@ export interface RequestWithToken extends Request {
 export interface CustomJwtPayload extends JwtPayload {
   id: string;
   role: string;
+  isVerified?: boolean;
 }
 export interface UserPayload {
   id: string;

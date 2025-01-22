@@ -1,24 +1,26 @@
 import jwt from "jsonwebtoken";
 
+
+type PayloadOpts =  {
+  id: string;
+  role: string;
+  isVerified?: boolean;
+}
+
+
 export async function generateAccessToken({
   id,
   role,
-  time = "15s",
-}: {
-  role: string;
-  id: string;
-  time?: string;
-}) {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET!, { expiresIn: time });
+  isVerified
+}: PayloadOpts) {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET!, { expiresIn: "15s" });
 }
 
 export async function generateRefreshToken({
   id,
   role,
-}: {
-  id: string;
-  role: string;
-}) {
+  isVerified
+}:PayloadOpts) {
   return jwt.sign({ id, role }, process.env.JWT_SECRET!, { expiresIn: "1d" });
 }
 
@@ -33,13 +35,11 @@ export async function verifyToken(token: string) {
 export async function generateTokens({
   id,
   role,
-}: {
-  id: string;
-  role: string;
-}) {
+  isVerified
+}: PayloadOpts) {
   const [accessToken, refreshToken] = await Promise.all([
-    generateAccessToken({ id, role }),
-    generateRefreshToken({ id, role }),
+    generateAccessToken({ id, role, isVerified }),
+    generateRefreshToken({ id, role, isVerified }),
   ]);
   return {
     accessToken,

@@ -1,6 +1,10 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { createUser, findUserByEmail, findUserById } from "@/controller/repositories";
+import {
+  createUser,
+  findUserByEmail,
+  findUserById,
+} from "@/controller/repositories";
 import bcrypt from "bcrypt";
 import { SafeUserPayload, UserPayload } from "@/types";
 import { generateTokens } from "./jwt";
@@ -16,17 +20,21 @@ const initializeLocalPassport = () => {
       },
       async (email, password, done) => {
         const userExisted = await findUserByEmail(email);
-        if (!userExisted || !userExisted.profile) {
+        if (  !userExisted?.profile) {
           return done(null, false, { message: "User not found" });
         }
-
         const isPwValid = await bcrypt.compare(password, userExisted.password);
         if (!isPwValid) {
-          return done(null, false, { message: "Password is not valid" });
+          return done(null, false, { message: "Incorrect Password" });
+        }
+
+        if (!userExisted.isVerified) {
+          return done(null, false, { message: "Please verify your email" });
         }
         const { accessToken, refreshToken } = await generateTokens({
           id: userExisted.id.toString(),
           role: userExisted.profile.role!,
+          isVerified: userExisted.isVerified,
         });
         const filterUser = {
           id: userExisted.id,
@@ -61,7 +69,6 @@ const initializeLocalPassport = () => {
   });
 };
 
-
 passport.use(
   new JWTStrategy(
     {
@@ -89,38 +96,38 @@ passport.use(
   )
 );
 
-passport.use(
-  "signup",
-  new LocalStrategy(
-    {
-      usernameField: "email",
-      passwordField: "password",
-      passReqToCallback: true,
-    },
-    async (req, email, password, done) => {
-      const userExisted = await findUserByEmail(email);
-      if (userExisted) {
-        return done(null, false, { message: "User already exists" });
-      }
-      const hashPw = await bcrypt.hash(password, 10);
-      const user = await createUser({
-        email,
-        password: hashPw,
-        name: req.body.name,
-      });
-      if (!user) return done(null, false, { message: "Failed to create user" });
-      const { accessToken, refreshToken } = await generateTokens({
-        id: user.id.toString(),
-        role: user.role!,
-      });
-      const filterUser = {
-        id: user.id,
-        accessToken,
-        refreshToken,
-      };
-      return done(null, filterUser);
-    }
-  )
-)
+// passport.use(
+//   "signup",
+//   new LocalStrategy(
+//     {
+//       usernameField: "email",
+//       passwordField: "password",
+//       passReqToCallback: true,
+//     },
+//     async (req, email, password, done) => {
+//       const userExisted = await findUserByEmail(email);
+//       if (userExisted) {
+//         return done(null, false, { message: "User already exists" });
+//       }
+//       const hashPw = await bcrypt.hash(password, 10);
+//       const user = await createUser({
+//         email,
+//         password: hashPw,
+//         name: req.body.name,
+//       });
+//       if (!user) return done(null, false, { message: "Failed to create user" });
+//       const { accessToken, refreshToken } = await generateTokens({
+//         id: user.id.toString(),
+//         role: user.role!,
+//       });
+//       const filterUser = {
+//         id: user.id,
+//         accessToken,
+//         refreshToken,
+//       };
+//       return done(null, filterUser);
+//     }
+//   )
+// )
 
 export default initializeLocalPassport;

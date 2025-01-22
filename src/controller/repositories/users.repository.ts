@@ -17,8 +17,8 @@ export const findUsers = async () =>
     },
   });
 
-export const findUserById = async (id: string) =>{
-  const user =  await db.user.findUnique({
+export const findUserById = async (id: string) => {
+  const user = await db.user.findUnique({
     where: { id },
     select: {
       email: true,
@@ -46,7 +46,7 @@ export const findUserById = async (id: string) =>{
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
-}
+};
 export const createUser = async ({ email, password, name }: InputUserProps) => {
   const newUser = await db.user.create({
     data: { email, password, name },
@@ -55,8 +55,16 @@ export const createUser = async ({ email, password, name }: InputUserProps) => {
   return user;
 };
 
-export const findUserByEmail = async (email: string) =>
-  await db.user.findUnique({
-    where: { email },
+export const findUserByEmail = async (email: string) =>{
+  const user =  await db.user.findUnique({
+    where: { email, isVerified: true },
     include: { profile: { select: { image: true, role: true } } },
   });
+  return user
+}
+
+export const findIfEmailExist = async (email: string) =>
+  await db.user.findUnique({ where: { email }, include: {token: true} });
+
+
+export  const updateUserIsverified = async (id: string, isVerified: boolean) => await db.user.update({ where: { id }, data: { isVerified } });
