@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const protected_1 = require("@/routes/protected");
+const protected_1 = require("../../routes/protected");
 const protectedRouter = (0, express_1.Router)();
 protectedRouter.use("/books", protected_1.bookRoute);
 protectedRouter.use("/users", protected_1.userRoute);

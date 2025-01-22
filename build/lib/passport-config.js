@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = __importDefault(require("passport"));
 const passport_local_1 = require("passport-local");
-const repositories_1 = require("@/controller/repositories");
+const repositories_1 = require("../controller/repositories");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jwt_1 = require("./jwt");
 const passport_jwt_1 = require("passport-jwt");

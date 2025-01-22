@@ -4,10 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.profileRoute = void 0;
-const services_1 = require("@/controller/services");
-const validate_file_1 = __importDefault(require("@/helper/validate-file"));
-const validate_schema_1 = require("@/helper/validate-schema");
-const profile_schema_1 = require("@/schemas/profile-schema");
+const services_1 = require("../../controller/services");
+const validate_file_1 = __importDefault(require("../../helper/validate-file"));
+const validate_schema_1 = require("../../helper/validate-schema");
+const profile_schema_1 = require("../../schemas/profile-schema");
 const express_1 = require("express");
 const route = (0, express_1.Router)();
 exports.profileRoute = route;

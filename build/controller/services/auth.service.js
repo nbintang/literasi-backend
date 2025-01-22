@@ -8,9 +8,9 @@ exports.signIn = signIn;
 exports.refreshAccessToken = refreshAccessToken;
 exports.signOut = signOut;
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const repositories_1 = require("@/controller/repositories");
-const jwt_1 = require("@/lib/jwt");
-const error_response_1 = require("@/helper/error-response");
+const repositories_1 = require("../../controller/repositories");
+const jwt_1 = require("../../lib/jwt");
+const error_response_1 = require("../../helper/error-response");
 async function signUp(req, res, next) {
     const { email, password, name } = req.body;
     const userExists = await (0, repositories_1.findUserByEmail)(email);

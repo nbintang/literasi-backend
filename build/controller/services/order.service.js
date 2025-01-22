@@ -4,9 +4,9 @@ exports.getOrderByUserProfileId = getOrderByUserProfileId;
 exports.postOrder = postOrder;
 exports.patchOrder = patchOrder;
 exports.removeOrder = removeOrder;
-const repositories_1 = require("@/controller/repositories");
-const error_response_1 = require("@/helper/error-response");
-const count_price_1 = require("@/helper/count-price");
+const repositories_1 = require("../../controller/repositories");
+const error_response_1 = require("../../helper/error-response");
+const count_price_1 = require("../../helper/count-price");
 async function getOrderByUserProfileId(req, res, next) {
     try {
         const userId = req.query.id;

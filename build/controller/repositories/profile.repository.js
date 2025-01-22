@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findProfileByUserId = findProfileByUserId;
 exports.updateProfile = updateProfile;
-const db_1 = require("@/lib/db");
+const db_1 = require("../../lib/db");
 async function findProfileByUserId(userId) {
     const user = await db_1.db.user.findUnique({
         where: { id: userId },

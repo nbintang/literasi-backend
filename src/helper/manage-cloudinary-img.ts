@@ -23,8 +23,9 @@ export default async function manageCloudinaryImages({
   return await uploadImgToCloudinary({ buffer, folder, public_id });
 }
 
-async function checkAndDestroyImage(public_id: string): Promise<void> {
+async function checkAndDestroyImage(public_id: ManageCloudinaryImages["public_id"]): Promise<void> {
   return new Promise((resolve, reject) => {
+    if(!public_id) return resolve();
     cloudinary.api.resource(public_id, (error, result) => {
       if (error || !result) {
         return reject(error);

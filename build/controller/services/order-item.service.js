@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOrderItemById = getOrderItemById;
 exports.deleteOrderItem = deleteOrderItem;
-const repositories_1 = require("@/controller/repositories");
-const error_response_1 = require("@/helper/error-response");
+const repositories_1 = require("../../controller/repositories");
+const error_response_1 = require("../../helper/error-response");
 async function getOrderItemById(req, res, next) {
     try {
         const { id } = req.params;

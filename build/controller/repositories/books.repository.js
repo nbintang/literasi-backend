@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateBookStock = exports.getBooksByIds = exports.deleteBooks = exports.updateBook = exports.createBook = exports.findBooksByCategory = exports.findBookById = exports.findBooks = void 0;
-const db_1 = require("@/lib/db");
+const db_1 = require("../../lib/db");
 const findBooks = async (take, skip) => {
     const books = await db_1.db.book.findMany({
         take,

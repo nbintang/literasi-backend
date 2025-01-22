@@ -5,8 +5,8 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon --watch src --exec ts-node -r tsconfig-paths/register src/server.ts",
-    "build": "prisma generate && tsc",
-    "start": "node build/server.js",
+    "build": "prisma generate && tsc && tsc-alias",
+    "start": "node -r tsconfig-paths/register build/server.js",
     "db:migrate": "npx prisma migrate dev --name user-entity --create-only && npx prisma generate",
     "db:push": "npx prisma db push  && npx prisma generate",
     "db:seed": "ts-node --transpile-only prisma/seed.ts",
@@ -49,6 +49,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
     "prisma": "^6.2.1",
+    "tsc-alias": "^1.8.10",
     "typescript": "^5.6.2"
   }
 }

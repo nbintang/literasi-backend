@@ -60,12 +60,14 @@ exports.bookSchema = z.object({
         message: "Author name must be at most 100 characters",
     }),
     stock: z.coerce.number().default(0),
-    categories: z.array(z
+    categories: z
+        .array(z
         .string()
-        .min(4, { message: "Category must be at least 4 characters" })
-        .max(50, { message: "Category must be at most 50 characters" })
-        .min(1, {
-        message: "Category is required",
-    })),
+        .min(4, {
+        message: "Category must be at least 4 characters",
+    })
+        .max(50, {
+        message: "Category must be at most 50 characters",
+    }))
 });
 //# sourceMappingURL=book-schema.js.map

@@ -5,79 +5,82 @@ const prisma = new PrismaClient();
 async function main() {
   // Upsert categories
   // Create Users
-  const password = await bcrypt.hash('password', 10);
-  
+  const password = await bcrypt.hash("password", 10);
+
   const user = await prisma.user.upsert({
     where: {
-      email: 'john.doe@example.com',
+      email: "john.doe@example.com",
     },
-    update: {}, 
+    update: {},
     create: {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      password, 
+      name: "John Doe",
+      email: "john.doe@example.com",
+      password,
+      isVerified: true,
     },
   });
   const user2 = await prisma.user.upsert({
     where: {
-      email: 'jane.doe@example.com', 
+      email: "jane.doe@example.com",
     },
-    update: {}, 
+    update: {},
     create: {
-      name: 'Jane Doe',
-      email: 'jane.doe@example.com',
-      password, 
+      name: "Jane Doe",
+      email: "jane.doe@example.com",
+      password,
+      isVerified: true,
     },
   });
 
-  
   const profile1 = await prisma.profile.upsert({
     where: { userId: user.id },
     update: {},
     create: {
-      image: 'https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_e1x30r.jpg',
-      fullname: 'John Doe Full Name',
-      bio: 'A brief bio about John Doe',
+      image:
+        "https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_e1x30r.jpg",
+      fullname: "John Doe Full Name",
+      bio: "A brief bio about John Doe",
       role: "ADMIN",
       userId: user.id,
     },
   });
-  
+
   const profile2 = await prisma.profile.upsert({
     where: { userId: user2.id },
     update: {},
     create: {
-      image: 'https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_e1x30r.jpg',
-      fullname: 'Jane Doe Full Name',
-      bio: 'A brief bio about Jane Doe',
+      image:
+        "https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_e1x30r.jpg",
+      fullname: "Jane Doe Full Name",
+      bio: "A brief bio about Jane Doe",
       role: "USER",
       userId: user2.id,
     },
   });
-  
 
   // Create Categories
   const category = await prisma.category.upsert({
     where: {
-      name: 'Fiction', // Unique constraint check
+      name: "Fiction".toLowerCase(), // Unique constraint check
     },
     update: {},
     create: {
-      name: 'Fiction',
+      name: "Fiction".toLowerCase(),
     },
   });
 
   // Create Books
   const book = await prisma.book.create({
     data: {
-      title: 'The Great Adventure',
-      description: 'A book about a great adventure.',
+      title: "The Great Adventure",
+      description: "A book about a great adventure.",
       price: 19.99,
       stock: 100,
       content,
-      authorName: 'John Doe',
+      authorName: "John Doe",
       userId: user.id, // This connects the book to the profile
-      image: 'https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_e1x30r.jpg',
+      image:
+        "https://res.cloudinary.com/da6hciwjn/image/upload/v1731601886/bookstore/file_e1x30r.jpg",
       categories: {
         connect: { id: category.id },
       },
@@ -104,7 +107,7 @@ async function main() {
     user,
     profile1,
     profile2,
-    
+
     category,
     book,
     order,

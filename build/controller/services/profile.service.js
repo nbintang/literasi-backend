@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserProfileByUserId = getUserProfileByUserId;
 exports.getUserProfileDetailsByUserId = getUserProfileDetailsByUserId;
 exports.updateProfileByUserId = updateProfileByUserId;
-const error_response_1 = require("@/helper/error-response");
-const repositories_1 = require("@/controller/repositories");
-const manage_cloudinary_img_1 = __importDefault(require("@/helper/manage-cloudinary-img"));
+const error_response_1 = require("../../helper/error-response");
+const repositories_1 = require("../../controller/repositories");
+const manage_cloudinary_img_1 = __importDefault(require("../../helper/manage-cloudinary-img"));
 async function getUserProfileByUserId(req, res, next) {
     try {
         const user = req.user;

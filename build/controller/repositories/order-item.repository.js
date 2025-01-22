@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findOrderItemById = exports.deleteOrderItemById = void 0;
-const db_1 = require("@/lib/db");
+const db_1 = require("../../lib/db");
 const deleteOrderItemById = async (id) => {
     return await db_1.db.$transaction(async (tx) => {
         const orderItem = await tx.orderItem.findUnique({ where: { id } });

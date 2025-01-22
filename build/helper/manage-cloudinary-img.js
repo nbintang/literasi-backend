@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = manageCloudinaryImages;
 exports.uploadImgToCloudinary = uploadImgToCloudinary;
-const cld_1 = require("@/lib/cld");
+const cld_1 = require("../lib/cld");
 async function manageCloudinaryImages({ buffer, folder = "book-covers", public_id, }) {
     if (public_id) {
         try {
@@ -16,6 +16,8 @@ async function manageCloudinaryImages({ buffer, folder = "book-covers", public_i
 }
 async function checkAndDestroyImage(public_id) {
     return new Promise((resolve, reject) => {
+        if (!public_id)
+            return resolve();
         cld_1.cloudinary.api.resource(public_id, (error, result) => {
             if (error || !result) {
                 return reject(error);

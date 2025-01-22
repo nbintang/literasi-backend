@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUsers = getUsers;
 exports.getUserById = getUserById;
-const repositories_1 = require("@/controller/repositories");
-const error_response_1 = require("@/helper/error-response");
+const repositories_1 = require("../../controller/repositories");
+const error_response_1 = require("../../helper/error-response");
 async function getUsers(req, res) {
     const users = await (0, repositories_1.findUsers)();
     res.status(200).json({ success: true, data: users });

@@ -9,9 +9,9 @@ exports.getBooksByCategory = getBooksByCategory;
 exports.postBooks = postBooks;
 exports.putBooks = putBooks;
 exports.removeBook = removeBook;
-const repositories_1 = require("@/controller/repositories");
-const error_response_1 = require("@/helper/error-response");
-const manage_cloudinary_img_1 = __importDefault(require("@/helper/manage-cloudinary-img"));
+const repositories_1 = require("../../controller/repositories");
+const error_response_1 = require("../../helper/error-response");
+const manage_cloudinary_img_1 = __importDefault(require("../../helper/manage-cloudinary-img"));
 const cloudinary_build_url_1 = require("cloudinary-build-url");
 async function getBooks(req, res) {
     const { page, pageSize } = req.query || {};
