@@ -1,4 +1,4 @@
-import { db } from "../../lib/db";
+import { db } from "@/lib/db";
 
 export const deleteOrderItemById = async (id: string) => {
   return await db.$transaction(async (tx) => {

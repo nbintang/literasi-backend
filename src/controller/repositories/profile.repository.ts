@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { db } from "../../lib/db";
+import { db } from "@/lib/db";
 
 export async function findProfileByUserId(userId: string) {
   const user = await db.user.findUnique({

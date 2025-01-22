@@ -8,23 +8,22 @@ exports.signIn = signIn;
 exports.refreshAccessToken = refreshAccessToken;
 exports.signOut = signOut;
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const repositories_1 = require("../repositories");
-const jwt_1 = require("../../lib/jwt");
-const error_response_1 = require("../../helper/error-response");
-async function signUp(req, res) {
+const repositories_1 = require("@/controller/repositories");
+const jwt_1 = require("@/lib/jwt");
+const error_response_1 = require("@/helper/error-response");
+async function signUp(req, res, next) {
     const { email, password, name } = req.body;
     const userExists = await (0, repositories_1.findUserByEmail)(email);
-    if (userExists)
-        return (0, error_response_1.handleErrorResponse)(res, new Error("User already exists"));
     try {
+        if (userExists)
+            throw new error_response_1.CustomError("User already exists", 400);
         const hashPw = await bcrypt_1.default.hash(password, 10);
         const user = await (0, repositories_1.createUser)({ email, password: hashPw, name });
         if (!user)
-            return (0, error_response_1.handleErrorResponse)(res, new Error("Failed to create signup"));
+            throw new error_response_1.CustomError("User not created", 500);
         req.logIn(user, (err) => {
-            if (err) {
-                return (0, error_response_1.handleErrorResponse)(res, err);
-            }
+            if (err)
+                return next(err);
             res.status(200).json({
                 success: true,
                 message: "Welcome!...",
@@ -33,42 +32,43 @@ async function signUp(req, res) {
         });
     }
     catch (error) {
-        (0, error_response_1.handleErrorResponse)(res, error);
+        console.error("Error in 'signUp", error); // Log the error to check its details
+        next(error);
     }
 }
 async function signIn(req, res, next) {
     try {
-        const { accessToken, refreshToken } = req.user;
-        if (accessToken && refreshToken) {
-            res.cookie("refreshToken", refreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV !== "development",
-                sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
-                maxAge: 24 * 60 * 60 * 1000,
-            });
+        const user = req.user;
+        if (!user)
+            throw new error_response_1.CustomError("Unauthorized", 401);
+        if ("accessToken" in user && "refreshToken" in user) {
+            const { accessToken, refreshToken } = user;
+            if (accessToken && refreshToken) {
+                res.cookie("refreshToken", refreshToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV !== "development",
+                    sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+                    maxAge: 24 * 60 * 60 * 1000,
+                });
+                res.status(200).json({
+                    success: true,
+                    message: "Welcome!...",
+                    accessToken,
+                    refreshToken,
+                });
+            }
         }
-        res.status(200).json({
-            success: true,
-            message: "Welcome!...",
-            accessToken,
-            refreshToken,
-        });
     }
     catch (error) {
         console.error("Error in 'signIn", error); // Log the error to check its details
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-        });
+        next(error);
     }
 }
 async function refreshAccessToken(req, res, next) {
     const { refreshToken } = req.cookies;
-    if (!refreshToken) {
-        const error = new Error("Refresh token not found");
-        return (0, error_response_1.handleErrorResponse)(res, error, 404);
-    }
     try {
+        if (!refreshToken)
+            throw new error_response_1.CustomError("Refresh token not found", 404);
         const decode = (await (0, jwt_1.verifyToken)(refreshToken));
         const accessToken = await (0, jwt_1.generateAccessToken)({
             id: decode.id.toString(),
@@ -78,17 +78,21 @@ async function refreshAccessToken(req, res, next) {
     }
     catch (error) {
         res.clearCookie("refreshToken");
-        return (0, error_response_1.handleErrorResponse)(res, error, 401);
+        res.clearCookie("accessToken");
+        next(error);
     }
 }
-async function signOut(req, res) {
-    const { refreshToken } = req.cookies;
-    if (!refreshToken) {
-        const error = new Error("Refresh token not found");
-        return (0, error_response_1.handleErrorResponse)(res, error, 404);
+async function signOut(req, res, next) {
+    try {
+        const { refreshToken } = req.cookies;
+        if (!refreshToken)
+            throw new error_response_1.CustomError("Refresh token not found", 404);
+        res.clearCookie("refreshToken");
+        res.clearCookie("accessToken");
+        res.status(200).json({ message: "Sign out successfully" });
     }
-    res.clearCookie("refreshToken");
-    res.clearCookie("accessToken");
-    res.status(200).json({ message: "Sign out successfully" });
+    catch (error) {
+        next(error);
+    }
 }
 //# sourceMappingURL=auth.service.js.map

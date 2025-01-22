@@ -1,10 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findOrderItemById = exports.deleteOrderItemById = void 0;
-const db_1 = require("../../lib/db");
+const db_1 = require("@/lib/db");
 const deleteOrderItemById = async (id) => {
     return await db_1.db.$transaction(async (tx) => {
         const orderItem = await tx.orderItem.findUnique({ where: { id } });
+        if (!orderItem)
+            return null;
         await tx.book.update({
             where: { id: orderItem?.bookId },
             data: { stock: { increment: orderItem?.quantity } },
@@ -34,6 +36,8 @@ const findOrderItemById = async (id) => {
             book: { select: { title: true, price: true, description: true } },
         },
     });
+    if (!orderItem)
+        return null;
     return {
         id: orderItem?.id,
         orderId: orderItem?.orderId,

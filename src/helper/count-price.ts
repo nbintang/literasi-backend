@@ -1,5 +1,5 @@
 import { Decimal } from "@prisma/client/runtime/library";
-import { OrderProps } from "../types/order";
+import { OrderProps } from "@/types/order";
 
 interface BooksProps {
   id: string;

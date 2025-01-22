@@ -1,5 +1,5 @@
-import { InputUserProps } from "../../types";
-import { db } from "../../lib/db";
+import { InputUserProps } from "@/types";
+import { db } from "@/lib/db";
 
 export const findUsers = async () =>
   await db.user.findMany({

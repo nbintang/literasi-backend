@@ -1,4 +1,4 @@
-import { cloudinary } from "../lib/cld";
+import { cloudinary } from "@/lib/cld";
 
 interface ManageCloudinaryImages {
   buffer: Buffer;

@@ -1,5 +1,5 @@
-import { db } from "../../lib/db";
-import { OrderProps } from "../../types/order";
+import { db } from "@/lib/db";
+import { OrderProps } from "@/types/order";
 
 export const findOrderBookByUserId = async (orderedUserId: string) => {
   const order = await db.order.findMany({

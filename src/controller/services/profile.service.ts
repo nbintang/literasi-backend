@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { SafeUserPayload } from "../../types";
-import { CustomError } from "../../helper/error-response";
-import { findProfileByUserId, updateProfile } from "../repositories";
-import manageCloudinaryImages from "../../helper/manage-cloudinary-img";
+import { SafeUserPayload, UserPayload } from "@/types";
+import { CustomError } from "@/helper/error-response";
+import { findProfileByUserId, updateProfile } from "@/controller/repositories";
+import manageCloudinaryImages from "@/helper/manage-cloudinary-img";
 
 export async function getUserProfileByUserId(
   req: Request,
@@ -24,7 +24,7 @@ export async function getUserProfileDetailsByUserId(
   next: NextFunction
 ) {
   try {
-    const userId = req.user?.id;
+    const userId = (req.user as SafeUserPayload).id;
     if (!userId) throw new CustomError("Unauthorized", 401);
     const profile = await findProfileByUserId(userId);
     if (!profile) throw new CustomError("Profile not found", 404);

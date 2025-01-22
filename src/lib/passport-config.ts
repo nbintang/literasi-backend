@@ -1,8 +1,8 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { createUser, findUserByEmail, findUserById } from "../controller/repositories";
+import { createUser, findUserByEmail, findUserById } from "@/controller/repositories";
 import bcrypt from "bcrypt";
-import { SafeUserPayload, UserPayload } from "../types";
+import { SafeUserPayload, UserPayload } from "@/types";
 import { generateTokens } from "./jwt";
 import { ExtractJwt, Strategy as JWTStrategy } from "passport-jwt";
 

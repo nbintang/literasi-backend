@@ -6,13 +6,12 @@ import {
   findOrderById,
   updateOrderById,
   getBooksByIds,
-} from "../repositories";
-import { CustomError } from "../../helper/error-response";
-import { OrderProps } from "../../types/order";
-import {
-  countInsufficientStock,
-  countTotalPrice,
-} from "../../helper/count-price";
+} from "@/controller/repositories";
+import { CustomError } from "@/helper/error-response";
+import { OrderProps } from "@/types/order";
+import { countInsufficientStock, countTotalPrice } from "@/helper/count-price";
+import { SafeUserPayload } from "@/types";
+
 
 export async function getOrderByUserProfileId(
   req: Request,
@@ -38,7 +37,7 @@ export async function postOrder(
   try {
     if (!items || !Array.isArray(items))
       throw new CustomError("Invalid items", 400);
-    const userId = req.user?.id;
+    const userId = (req.user as SafeUserPayload).id;
     if (!userId) throw new CustomError("Unauthorized", 401);
     const bookIds = items.map((item) => item.bookId);
     const books = await getBooksByIds(bookIds);
@@ -75,7 +74,7 @@ export async function patchOrder(
     if (!items || !Array.isArray(items))
       throw new CustomError("Invalid items", 400);
 
-    const userId = req.user?.id;
+    const userId = (req.user as SafeUserPayload).id;
     if (!userId) throw new CustomError("Unauthorized", 401);
     const bookIds = items.map((item) => item.bookId)
     const books = await getBooksByIds(bookIds);

@@ -6,5 +6,5 @@ export type InputBooksProps = {
     content: string;
     authorName: string,
     stock?: number;
-    categories: string[];
+    categories: string[] ;
   }

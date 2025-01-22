@@ -1,5 +1,5 @@
 import passport from "passport";
-import { UserPayload } from "../types";
+import { UserPayload } from "@/types";
 import { NextFunction, Request, Response } from "express";
 
 const authMiddleware = (strategy: string) => {

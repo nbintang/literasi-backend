@@ -6,11 +6,12 @@ import {
   createBook,
   updateBook,
   deleteBooks,
-} from "../repositories";
-import { CustomError } from "../../helper/error-response";
-import { InputBooksProps } from "../../types/books";
-import manageCloudinaryImages from "../../helper/manage-cloudinary-img";
+} from "@/controller/repositories";
+import { CustomError } from "@/helper/error-response";
+import { InputBooksProps } from "@/types/books";
+import manageCloudinaryImages from "@/helper/manage-cloudinary-img";
 import { extractPublicId } from "cloudinary-build-url";
+import { SafeUserPayload } from "@/types";
 
 export async function getBooks(req: Request, res: Response) {
   const { page, pageSize } = req.query || {};
@@ -83,7 +84,7 @@ export async function postBooks(
       stock,
     }: InputBooksProps = req.body;
     const image = req.file;
-    const userId = req.user?.id;
+    const userId = (req.user as SafeUserPayload).id;
 
     if (!image) throw new CustomError("No image provided", 404);
     const { public_id, secure_url } = await manageCloudinaryImages({
@@ -124,7 +125,7 @@ export async function putBooks(
       price,
     }: InputBooksProps = req.body;
     const image = req.file;
-    const userId = req.user?.id;
+    const userId = (req.user as SafeUserPayload).id;
     const existedBook = await findBookById(id);
     if (!existedBook) throw new CustomError("Book not found", 404);
     const existedImgPublicId = await extractPublicId(

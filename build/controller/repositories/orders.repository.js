@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findOrderById = exports.deleteOrderById = exports.updateOrderById = exports.createOrder = exports.findOrderBookByUserId = void 0;
-const db_1 = require("../../lib/db");
+const db_1 = require("@/lib/db");
 const findOrderBookByUserId = async (orderedUserId) => {
     const order = await db_1.db.order.findMany({
         where: { orderedUserId: orderedUserId },

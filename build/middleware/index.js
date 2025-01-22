@@ -4,14 +4,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = __importDefault(require("passport"));
-const error_response_1 = require("../helper/error-response");
 const authMiddleware = (strategy) => {
     return (req, res, next) => {
         passport_1.default.authenticate(strategy, { failWithError: true }, (err, user, info) => {
             if (err)
                 return next(err);
             if (!user) {
-                return (0, error_response_1.handleErrorResponse)(res, new Error("Unauthorized"), 401);
+                res.status(401).json({ success: false, message: info.message });
+                return;
             }
             req.user = user;
             return next();

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findUserByEmail = exports.createUser = exports.findUserById = exports.findUsers = void 0;
-const db_1 = require("../../lib/db");
+const db_1 = require("@/lib/db");
 const findUsers = async () => await db_1.db.user.findMany({
     where: {
         profile: {

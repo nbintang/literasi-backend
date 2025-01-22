@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { deleteOrderItemById, findOrderItemById } from "../repositories";
-import { CustomError } from "../../helper/error-response";
+import { deleteOrderItemById, findOrderItemById } from "@/controller/repositories";
+import { CustomError } from "@/helper/error-response";
 
 export async function getOrderItemById(
   req: Request,

@@ -1,5 +1,5 @@
-import { db } from "../../lib/db";
-import { InputBooksProps } from "../../types/books";
+import { db } from "@/lib/db";
+import { InputBooksProps } from "@/types/books";
 
 export const findBooks = async (take: number, skip: number) => {
   const books = await db.book.findMany({
@@ -106,11 +106,11 @@ export const createBook = async (
       authorName,
       userId,
       categories: {
-        connectOrCreate: categories.map((category) => ({
+        connectOrCreate: (categories as string[]).map((category) => ({
           where: { name: category.toLowerCase() },
           create: { name: category.toLowerCase() },
-        })),
-      },
+        })) ,
+      } ,
     },
   });
   const book = await findBookById(createdBook.id);
@@ -144,7 +144,7 @@ export const updateBook = async (
       content,
       authorName,
       categories: {
-        connectOrCreate: categories.map((category) => ({
+        connectOrCreate:  categories.map((category) => ({
           where: { name: category.toLowerCase() },
           create: { name: category.toLowerCase() },
         })),

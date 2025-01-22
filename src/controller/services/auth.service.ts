@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
-import { createUser, findUserByEmail } from "../repositories";
-import { generateAccessToken, verifyToken } from "../../lib/jwt";
-import { CustomJwtPayload, RequestWithToken } from "../../types";
-import { CustomError } from "../../helper/error-response";
+import { createUser, findUserByEmail } from "@/controller/repositories";
+import { generateAccessToken, verifyToken } from "@/lib/jwt";
+import { CustomJwtPayload, RequestWithToken } from "@/types";
+import { CustomError } from "@/helper/error-response";
 
 export async function signUp(req: Request, res: Response, next: NextFunction) {
   const { email, password, name } = req.body;

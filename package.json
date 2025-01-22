@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon --watch src --exec ts-node src/server.ts",
+    "dev": "nodemon --watch src --exec ts-node -r tsconfig-paths/register src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node build/server.js",
     "db:migrate": "npx prisma migrate dev --name user-entity --create-only && npx prisma generate",
@@ -32,6 +32,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "tsconfig-paths": "^4.2.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

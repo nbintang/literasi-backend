@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { findUserById, findUsers } from "../repositories";
-import { CustomError } from "../../helper/error-response";
+import { findUserById, findUsers } from "@/controller/repositories";
+import { CustomError } from "@/helper/error-response";
 
 export async function getUsers(req: Request, res: Response) {
   const users = await findUsers();
