@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { findUserById, findUsers } from "@/controller/repositories";
-import { CustomError } from "@/helper/error-response";
+import { PayloadError } from "@/helper/error-response";
 
 export async function getUsers(req: Request, res: Response) {
   const users = await findUsers();
@@ -11,10 +11,10 @@ export async function getUserById(req: Request, res: Response, next: NextFunctio
 try {
   const { id } = req.params;
 
-  if (!id) throw new CustomError("User id not found", 404);
+  if (!id) throw new PayloadError("User id not found", 404);
 
   const user = await findUserById(id)
-  if (!user) throw new CustomError("User not found", 404);
+  if (!user) throw new PayloadError("User not found", 404);
 
 
   res.status(200).json({ success: true, data: user });

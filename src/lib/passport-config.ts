@@ -2,7 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import {
   createUser,
-  findUserByEmail,
+  findUserByEmailWithProfile,
   findUserById,
 } from "@/controller/repositories";
 import bcrypt from "bcrypt";
@@ -19,8 +19,8 @@ const initializeLocalPassport = () => {
         passwordField: "password",
       },
       async (email, password, done) => {
-        const userExisted = await findUserByEmail(email);
-        if (  !userExisted?.profile) {
+        const userExisted = await findUserByEmailWithProfile(email);
+        if (  !userExisted) {
           return done(null, false, { message: "User not found" });
         }
         const isPwValid = await bcrypt.compare(password, userExisted.password);
@@ -33,7 +33,7 @@ const initializeLocalPassport = () => {
         }
         const { accessToken, refreshToken } = await generateTokens({
           id: userExisted.id.toString(),
-          role: userExisted.profile.role!,
+          role: userExisted?.profile?.role || "USER",
           isVerified: userExisted.isVerified,
         });
         const filterUser = {
@@ -54,13 +54,13 @@ const initializeLocalPassport = () => {
       const user = await findUserById(id);
       if (!user) return done(null, false);
 
-      const safeUser = {
+      const safeUser: SafeUserPayload = {
         id: user.id,
         email: user.email,
         username: user.name,
-        image: user.image,
-        role: user.role,
-      } as SafeUserPayload;
+        image: user.image || "",
+        role: user.role || "USER",
+      };
 
       done(null, safeUser);
     } catch (error) {
@@ -81,12 +81,13 @@ passport.use(
           return done(null, false, { message: "Unauthorized" });
         const user = await findUserById(jwtPayload.id);
         if (!user) return done(null, false, { message: "User not found" });
-        const safeUser = {
+        const safeUser: SafeUserPayload = {
           id: user.id,
-          image: user.image,
+          image: user.image || "",
           username: user.name,
           email: user.email,
-        } as SafeUserPayload;
+          role: user.role || "USER",
+        } ;
 
         return done(null, safeUser);
       } catch (error) {

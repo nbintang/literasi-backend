@@ -7,7 +7,7 @@ import {
   updateBook,
   deleteBooks,
 } from "@/controller/repositories";
-import { CustomError } from "@/helper/error-response";
+import { PayloadError } from "@/helper/error-response";
 import { InputBooksProps } from "@/types/books";
 import manageCloudinaryImages from "@/helper/manage-cloudinary-img";
 import { extractPublicId } from "cloudinary-build-url";
@@ -35,7 +35,7 @@ export async function getBookById(
   try {
     const { id } = req.params;
     const book = await findBookById(id);
-    if (!book) throw new CustomError("Book not found", 404);
+    if (!book) throw new PayloadError("Book not found", 404);
     res.status(200).json({ success: true, data: book });
   } catch (error) {
     next(error);
@@ -58,7 +58,7 @@ export async function getBooksByCategory(
       take: pageSizeNum,
       skip,
     });
-    if (!book) throw new CustomError("Book not found", 404);
+    if (!book) throw new PayloadError("Book not found", 404);
     res
       .status(200)
       .json({ success: true, page: pageNum, genre: name, data: book });
@@ -86,7 +86,7 @@ export async function postBooks(
     const image = req.file;
     const userId = (req.user as SafeUserPayload).id;
 
-    if (!image) throw new CustomError("No image provided", 404);
+    if (!image) throw new PayloadError("No image provided", 404);
     const { public_id, secure_url } = await manageCloudinaryImages({
       buffer: image.buffer,
     });
@@ -127,12 +127,12 @@ export async function putBooks(
     const image = req.file;
     const userId = (req.user as SafeUserPayload).id;
     const existedBook = await findBookById(id);
-    if (!existedBook) throw new CustomError("Book not found", 404);
+    if (!existedBook) throw new PayloadError("Book not found", 404);
     const existedImgPublicId = await extractPublicId(
       existedBook.image as string
     );
     if (!image || !authorName || !categories)
-      throw new CustomError("Please provide all required fields", 404);
+      throw new PayloadError("Please provide all required fields", 404);
     const { secure_url } = await manageCloudinaryImages({
       buffer: image.buffer,
       public_id: existedImgPublicId,
@@ -166,7 +166,7 @@ export async function removeBook(
   try {
     const { id } = req.params;
     const deletedBook = await deleteBooks(id);
-    if (!deletedBook) throw new CustomError("Book not found", 404);
+    if (!deletedBook) throw new PayloadError("Book not found", 404);
     res
       .status(200)
       .json({ success: true, message: "Book deleted successfully" });

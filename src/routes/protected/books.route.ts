@@ -9,11 +9,24 @@ import {
 import validateSingleFile from "@/helper/validate-file";
 import { validateSchema } from "@/helper/validate-schema";
 import { bookSchema } from "@/schemas/book-schema";
+import { forAdminOnlyMiddleware } from "@/middleware";
 const route = Router();
 
 route.get("/", getBooks);
 route.get("/:id", getBookById);
-route.post("/", validateSingleFile, validateSchema(bookSchema), postBooks);
-route.put("/:id", validateSingleFile, validateSchema(bookSchema), putBooks);
-route.delete("/:id", removeBook);
+route.post(
+  "/",
+  forAdminOnlyMiddleware,
+  validateSingleFile,
+  validateSchema(bookSchema),
+  postBooks
+);
+route.put(
+  "/:id",
+  forAdminOnlyMiddleware,
+  validateSingleFile,
+  validateSchema(bookSchema),
+  putBooks
+);
+route.delete("/:id",forAdminOnlyMiddleware, removeBook);
 export { route as bookRoute };

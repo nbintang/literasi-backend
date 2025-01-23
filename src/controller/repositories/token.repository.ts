@@ -13,5 +13,21 @@ export const createToken = async (
     },
   });
 
+export const findTokenByIdentifier = async (email: string) =>
+  await db.verificationToken.findFirstOrThrow({
+    where: {
+      user: {
+        email,
+      },
+    },
+  });
 
-  export const findToken = async (token: string) => await db.verificationToken.findUnique({ where: { token } });
+export const deleteAllTokensByIdentifier = async (email: string) => {
+  await db.verificationToken.deleteMany({
+    where: {
+      user: {
+        email,
+      },
+    },
+  })
+}

@@ -18,7 +18,7 @@ export const findUsers = async () =>
   });
 
 export const findUserById = async (id: string) => {
-  const user = await db.user.findUnique({
+  const user = await db.user.findUniqueOrThrow({
     where: { id },
     select: {
       email: true,
@@ -34,13 +34,10 @@ export const findUserById = async (id: string) => {
       updatedAt: true,
     },
   });
-  if (!user) return null;
-
-  // Return a clean response without the profile field
   return {
+    id: user.id,
     email: user.email,
     name: user.name,
-    id: user.id,
     image: user.profile?.image,
     role: user.profile?.role,
     createdAt: user.createdAt,
@@ -55,16 +52,26 @@ export const createUser = async ({ email, password, name }: InputUserProps) => {
   return user;
 };
 
-export const findUserByEmail = async (email: string) =>{
-  const user =  await db.user.findUnique({
+export const findUserByEmailWithProfile = async (email: string) => {
+  const user = await db.user.findUnique({
     where: { email, isVerified: true },
     include: { profile: { select: { image: true, role: true } } },
   });
-  return user
-}
+  return user;
+};
 
-export const findIfEmailExist = async (email: string) =>
-  await db.user.findUnique({ where: { email }, include: {token: true} });
+export const findEmailWithToken = async (email: string) =>
+  await db.user.findUnique({ where: { email }, include: { token: true } });
 
-
-export  const updateUserIsverified = async (id: string, isVerified: boolean) => await db.user.update({ where: { id }, data: { isVerified } });
+export const updateUserVerifyStatus = async (id: string, isVerified: boolean) =>
+  await db.user.update({
+    where: { id },
+    data: {
+      isVerified,
+      profile: {
+        create: {
+          role: "USER",
+        },
+      },
+    },
+  });

@@ -4,7 +4,7 @@ interface MailProps {
   subject: string;
   text: string;
 }
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV !== "production";
 const config = {
   host: isDev ? process.env.DEV_EMAIL_HOST : process.env.PROD_EMAIL_HOST,
   user: isDev ? process.env.DEV_EMAIL_USER : process.env.PROD_EMAIL_USER,
@@ -17,11 +17,11 @@ const config = {
 async function sendEmail({ to, subject, text }: MailProps) {
   const { host, user, pass, port } = config;
   const transporter = await nodemailer.createTransport({
-    port: Number(process.env.DEV_EMAIL_PORT),
-    host: process.env.DEV_EMAIL_HOST,
+    port,
+    host,
     auth: {
-      user: process.env.DEV_EMAIL_USER,
-      pass: process.env.DEV_EMAIL_PASS,
+      user,
+      pass,
     },
   });
 

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import protectedRouter from "./protected/routes";
-import authMiddleware from "@/middleware";
+import {authMiddleware} from "@/middleware";
 import authRouter from "./auth/routes";
 
 const appRouter = Router();

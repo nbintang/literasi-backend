@@ -1,5 +1,5 @@
 import multer from "multer";
-import { CustomError } from "./error-response";
+import { PayloadError } from "./error-response";
 import path from "path";
 
 // Set up the storage configuration (optional, can be omitted for default storage)
@@ -20,7 +20,7 @@ const fileFilter = (
     cb(null, true); // Accept the file
   } else {
     cb(
-      new CustomError("Invalid file type. Only JPG, PNG, and JPEG are allowed!")
+      new PayloadError("Invalid file type. Only JPG, PNG, and JPEG are allowed!")
     ); // Reject the file
   }
 };

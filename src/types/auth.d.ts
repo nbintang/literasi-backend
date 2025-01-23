@@ -32,4 +32,5 @@ export interface SafeUserPayload  {
   image?: string;
   email?: string;
   username?: string;
+  role: string;
 }

@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { OrderProps } from "@/types/order";
+import { Prisma } from "@prisma/client";
 
 export const findOrderBookByUserId = async (orderedUserId: string) => {
   const order = await db.order.findMany({
@@ -34,22 +35,27 @@ export const findOrderBookByUserId = async (orderedUserId: string) => {
   }));
 };
 
+const { sql } = Prisma;
+
 export const createOrder = async ({
   items,
   orderedUserId,
   totalPrice,
 }: {
   items: OrderProps[];
-  orderedUserId: string,
+  orderedUserId: string;
   totalPrice: number;
 }) => {
   return await db.$transaction(async (tx) => {
+    // Decrease book stock
     await Promise.all(
-      items.map((item) =>
-        tx.book.update({
-          where: { id: item.bookId },
-          data: { stock: { decrement: item.quantity } },
-        })
+      items.map(
+        (item) =>
+          tx.$executeRaw`
+          UPDATE Book 
+          SET stock = stock - ${item.quantity} 
+          WHERE id = ${item.bookId}
+        `
       )
     );
 
@@ -58,7 +64,7 @@ export const createOrder = async ({
         orderedUserId,
         totalPrice,
       },
-    });
+    })
 
     const orderItems = items.map((item) => ({
       orderId: order.id,
@@ -69,6 +75,7 @@ export const createOrder = async ({
     await tx.orderItem.createMany({
       data: orderItems,
     });
+
     return order;
   });
 };
@@ -79,7 +86,7 @@ export const updateOrderById = async ({
   orderedUserId,
   totalPrice,
 }: {
-  orderId: string
+  orderId: string;
   items: OrderProps[];
   orderedUserId: string;
   totalPrice: number;
@@ -89,23 +96,27 @@ export const updateOrderById = async ({
       where: { orderId },
     });
 
-    await Promise.all(
-      existingOrderItems.map((item) =>
-        tx.book.update({
-          where: { id: item.bookId },
-          data: { stock: { increment: item.quantity } },
-        })
+    const increaseStock = await Promise.all(
+      existingOrderItems.map(
+        (item) =>
+          tx.$executeRaw`
+            UPDATE Book 
+            SET stock = stock + ${item.quantity} 
+            WHERE id = ${item.bookId}
+            `
       )
     );
 
-    await tx.orderItem.deleteMany({ where: { orderId} });
+    await tx.$executeRaw`DELETE FROM OrderItem WHERE orderId = ${orderId}`;
 
     await Promise.all(
-      items.map((item) =>
-        tx.book.update({
-          where: { id: item.bookId },
-          data: { stock: { decrement: item.quantity } },
-        })
+      items.map(
+        (item) =>
+          tx.$executeRaw`
+            UPDATE Book 
+            SET stock = stock - ${item.quantity} 
+            WHERE id = ${item.bookId}
+            `
       )
     );
 
@@ -131,21 +142,21 @@ export const updateOrderById = async ({
 };
 
 export const deleteOrderById = async (id: string) => {
-  
   return await db.$transaction(async (tx) => {
-
     const orderItem = await tx.orderItem.findMany({ where: { orderId: id } });
 
     await Promise.all(
-      orderItem.map((item) =>
-        tx.book.update({
-          where: { id: item.bookId },
-          data: { stock: { increment: item.quantity } },
-        })
+      orderItem.map(
+        (item) =>
+          tx.$executeRaw`
+            UPDATE Book 
+            SET stock = stock + ${item.quantity} 
+            WHERE id = ${item.bookId}
+            `
       )
     );
-    await tx.orderItem.deleteMany({ where: { orderId: id } });
-    await tx.order.delete({ where: { id } });
+    await tx.$executeRaw`DELETE FROM OrderItem WHERE orderId = ${id}`;
+    await tx.$executeRaw`DELETE FROM \`Order\` WHERE id = ${id}`;
   });
 };
 

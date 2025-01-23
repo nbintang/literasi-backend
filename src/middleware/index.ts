@@ -2,7 +2,7 @@ import passport from "passport";
 import { UserPayload } from "@/types";
 import { NextFunction, Request, Response } from "express";
 
-const authMiddleware = (strategy: string) => {
+export const authMiddleware = (strategy: string) => {
   return (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate(
       strategy,
@@ -11,8 +11,9 @@ const authMiddleware = (strategy: string) => {
         if (err) return next(err);
         if (!user) {
           res.status(401).json({ success: false, message: info.message });
-          return
+          return;
         }
+
         req.user = user;
         return next();
       }
@@ -20,8 +21,14 @@ const authMiddleware = (strategy: string) => {
   };
 };
 
-
-
-
-
-export default authMiddleware;
+export const forAdminOnlyMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if ((req.user as UserPayload).role !== "admin") {
+    res.status(403).json({ success: false, message: "Forbidden" });
+    return;
+  }
+  next();
+};

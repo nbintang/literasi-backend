@@ -2,27 +2,30 @@ import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import {
   createUser,
-  findIfEmailExist,
-  findUserByEmail,
-  updateUserIsverified,
+  findEmailWithToken,
+  findUserByEmailWithProfile,
+  updateUserVerifyStatus,
+  createToken,
+  deleteAllTokensByIdentifier,
+  findTokenByIdentifier,
 } from "@/controller/repositories";
 import { generateAccessToken, verifyToken } from "@/lib/jwt";
 import { CustomJwtPayload, RequestWithToken } from "@/types";
-import { CustomError } from "@/helper/error-response";
-import { generateOtp, generateOTps, genrateExpirationTime } from "@/helper/otp";
+import { PayloadError } from "@/helper/error-response";
+import { generateOtp, generateOTps, generateExpirationTime } from "@/helper/otp";
 import sendEmail from "@/lib/mail";
-import { createToken, findToken } from "../repositories/token.repository";
 
 export async function signUp(req: Request, res: Response, next: NextFunction) {
   const { email, password, name } = req.body;
   try {
-    const userExists = await findUserByEmail(email);
-    if (userExists) throw new CustomError("User already exists", 400);
+    const userExists = await findUserByEmailWithProfile(email);
+    if (userExists) throw new PayloadError("User already exists", 400);
     const hashPw = await bcrypt.hash(password, 10);
     const user = await createUser({ email, password: hashPw, name });
-    if (!user) throw new CustomError("Sign up failed", 500);
+    if (!user) throw new PayloadError("Sign up failed", 500);
     const { otp, expiresAt } = generateOTps();
-    const newToken = await createToken(otp, user.id.toString(), expiresAt);
+    const hashOtp = await bcrypt.hash(otp, 10);
+    await createToken(hashOtp, user.id.toString(), expiresAt);
 
     await sendEmail({
       to: email,
@@ -41,7 +44,7 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
 export async function signIn(req: Request, res: Response, next: NextFunction) {
   try {
     const user = req.user;
-    if (!user) throw new CustomError("Unauthorized", 401);
+    if (!user) throw new PayloadError("Unauthorized", 401);
     if ("accessToken" in user && "refreshToken" in user) {
       const { accessToken, refreshToken } = user;
 
@@ -74,7 +77,7 @@ export async function refreshAccessToken(
 ) {
   const { refreshToken } = req.cookies;
   try {
-    if (!refreshToken) throw new CustomError("Refresh token not found", 404);
+    if (!refreshToken) throw new PayloadError("Refresh token not found", 404);
     const decode = (await verifyToken(refreshToken)) as CustomJwtPayload;
 
     const accessToken = await generateAccessToken({
@@ -93,7 +96,8 @@ export async function refreshAccessToken(
 export async function signOut(req: Request, res: Response, next: NextFunction) {
   try {
     const { refreshToken } = req.cookies;
-    if (!refreshToken) throw new CustomError("Refresh token not found", 404);
+    if (!refreshToken) throw new PayloadError("Refresh token not found", 404);
+
     res.clearCookie("refreshToken");
     res.clearCookie("accessToken");
     res.status(200).json({ message: "Sign out successfully" });
@@ -109,18 +113,60 @@ export async function verifyEmailToken(
 ) {
   const { email, token } = req.body;
   try {
-    const user = await findIfEmailExist(email);
+    const user = await findEmailWithToken(email);
     if (!user)
-      throw new CustomError("Sign up failed, Please to sign up first", 404);
-    if (user.isVerified) throw new CustomError("Email already verified", 400);
-    const isTokenExist = await findToken(token);
-    if (!isTokenExist) throw new CustomError("Token not found", 404);
-    const isTokenExpired = isTokenExist.expiresAt < new Date(); // Check if token is expired more than 5 minutes
-    if (isTokenExpired) throw new CustomError("Token expired", 400);
-    await updateUserIsverified(user.id.toString(), true);
-    res
-      .status(200)
-      .json({ success: true, message: "Email verified successfully, Try to sign in" });
+      throw new PayloadError("Sign up failed, Please to sign up first", 404);
+    if (user.isVerified) throw new PayloadError("Email already verified", 400);
+
+    const existedToken = await findTokenByIdentifier(user.email);
+    if (!existedToken) throw new PayloadError("Token not found", 404);
+
+    const isTokenExpired = existedToken.expiresAt < new Date();
+    if (isTokenExpired) throw new PayloadError("Token expired", 400);
+
+    const isTokenValid = await bcrypt.compare(token, existedToken.token);
+    if (!isTokenValid) throw new PayloadError("Invalid token", 400);
+
+    await updateUserVerifyStatus(user.id, isTokenValid);
+    await deleteAllTokensByIdentifier(user.email);
+
+    res.status(200).json({
+      success: true,
+      message: "Email verified successfully, Try to sign in",
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function resendEmailToken(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { email } = req.body;
+  try {
+    const user = await findEmailWithToken(email);
+    if (!user) throw new PayloadError("User not found", 404);
+    if (user.isVerified) throw new PayloadError("Email already verified", 400);
+
+    const { otp, expiresAt } = generateOTps();
+
+    await deleteAllTokensByIdentifier(user.email);
+
+    const hashOtp = await bcrypt.hash(otp, 10);
+    await createToken(hashOtp, user.id.toString(), expiresAt);
+
+    await sendEmail({
+      to: user.email,
+      subject: "Verify your email",
+      text: `Your verification code is ${otp}`,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Verification code sent successfully, please check your email",
+    });
   } catch (error) {
     next(error);
   }
