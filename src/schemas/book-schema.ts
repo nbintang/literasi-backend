@@ -25,7 +25,7 @@ export const bookSchema = z.object({
       message: "Content must be at least 200 characters",
     })
     .max(65535, {
-      message: "Content must be at most 65535 characters",
+      message: "Content must be at most 65,535 characters",
     }),
   authorName: z
     .string()

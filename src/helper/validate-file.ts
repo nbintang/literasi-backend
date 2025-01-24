@@ -17,11 +17,11 @@ const fileFilter = (
 
   // Accept only .jpg, .jpeg, and .png files
   if (mimetype && extname) {
-    cb(null, true); // Accept the file
+    cb(null, true); 
   } else {
     cb(
       new PayloadError("Invalid file type. Only JPG, PNG, and JPEG are allowed!")
-    ); // Reject the file
+    );
   }
 };
 

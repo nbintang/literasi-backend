@@ -19,7 +19,7 @@ export async function getOrderByUserProfileId(
   next: NextFunction
 ) {
   try {
-    const userId = req.query.id as string;
+    const userId = req.query.userId as string;
     if (!userId) throw new PayloadError("User id not found", 404);
     const order = await findOrderBookByUserId(userId);
     res.status(200).json({ success: true, data: order });

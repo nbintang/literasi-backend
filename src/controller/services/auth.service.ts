@@ -12,7 +12,7 @@ import {
 import { generateAccessToken, verifyToken } from "@/lib/jwt";
 import { CustomJwtPayload, RequestWithToken } from "@/types";
 import { PayloadError } from "@/helper/error-response";
-import { generateOtp, generateOTps, generateExpirationTime } from "@/helper/otp";
+import {generateOTps } from "@/helper/otp";
 import sendEmail from "@/lib/mail";
 
 export async function signUp(req: Request, res: Response, next: NextFunction) {

@@ -7,6 +7,12 @@ export const findOrderBookByUserId = async (orderedUserId: string) => {
     where: { orderedUserId: orderedUserId },
     select: {
       id: true,
+      orderedUser:{
+        select: {
+          name: true,
+
+        }
+      },
       totalPrice: true,
       createdAt: true,
       _count: { select: { orderItems: true } },
@@ -22,6 +28,7 @@ export const findOrderBookByUserId = async (orderedUserId: string) => {
   });
 
   return order.map((item) => ({
+    orderedBy: item.orderedUser.name,
     id: item.id,
     totalPrice: item.totalPrice,
     createdAt: item.createdAt,

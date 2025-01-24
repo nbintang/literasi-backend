@@ -3,15 +3,15 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import passport from "passport";
-import initializeLocalPassport from "@/lib/passport-config";
 import session from "express-session";
 import { errorHandler } from "@/helper/error-response";
 import appRouter from "@/routes";
+import { localConfigMiddleware } from "./middleware";
 const app = express();
 const port = 3001;
 dotenv.config();
 
-initializeLocalPassport();
+
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 app.use(cookieParser());
@@ -28,8 +28,7 @@ app.use(
     },
   })
 );
-app.use(passport.initialize());
-app.use(passport.session());
+localConfigMiddleware(app);
 app.get("/", (_, res) => {
   res.json({ message: "Hello World" });
 });
