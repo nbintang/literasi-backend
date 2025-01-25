@@ -33,17 +33,15 @@ export const findBooks = async (take: number, skip: number) => {
 };
 
 export const findBookById = async (id: string) => {
-  const book = await db.book.findUnique({
+  const book = await db.book.findUniqueOrThrow({
     where: { id },
     include: {
       categories: { select: { name: true } },
     },
   });
-
-  if (!book) return null;
   return {
     ...book,
-    categories: book?.categories.map((category) => category.name).join(", "),
+    categories: book.categories.map((category) => category.name).join(", "),
   };
 };
 
@@ -157,7 +155,6 @@ export const updateBook = async (
 
 export const deleteBooks = async (id: string) => {
   const existedBook = await findBookById(id);
-  if (!existedBook) return null;
   const deletedBook = await db.book.delete({ where: { id: existedBook.id } });
   return deletedBook;
 };
@@ -167,7 +164,7 @@ export const getBooksByIds = async (bookIds: string[]) => {
   const books =   await db.book.findMany({
     where: {
       id: {
-        in: bookIds || [],
+        in: bookIds as string[],
       },
     },
     select: {
@@ -178,7 +175,6 @@ export const getBooksByIds = async (bookIds: string[]) => {
     },
   });
 
-  if(!books) return null;
   return books;
 };
 export const updateBookStock = async (bookId: string, quantity: number) => {

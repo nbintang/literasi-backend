@@ -131,8 +131,7 @@ export async function putBooks(
     const existedImgPublicId = await extractPublicId(
       existedBook.image as string
     );
-    if (!image || !authorName || !categories)
-      throw new PayloadError("Please provide all required fields", 404);
+    if (!image || !authorName || !categories) throw new PayloadError("Please provide all required fields", 404);
     const { secure_url } = await manageCloudinaryImages({
       buffer: image.buffer,
       public_id: existedImgPublicId,

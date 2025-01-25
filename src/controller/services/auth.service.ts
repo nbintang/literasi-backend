@@ -36,7 +36,6 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
       .status(200)
       .json({ success: true, message: "Please check your email to verify" });
   } catch (error) {
-    console.error("Error in 'signUp", error); // Log the error to check its details
     next(error);
   }
 }
@@ -65,7 +64,6 @@ export async function signIn(req: Request, res: Response, next: NextFunction) {
       }
     }
   } catch (error) {
-    console.error("Error in 'signIn", error); // Log the error to check its details
     next(error);
   }
 }
@@ -114,8 +112,7 @@ export async function verifyEmailToken(
   const { email, token } = req.body;
   try {
     const user = await findEmailWithToken(email);
-    if (!user)
-      throw new PayloadError("Sign up failed, Please to sign up first", 404);
+    if (!user) throw new PayloadError("Sign up failed, Please to sign up first", 404);
     if (user.isVerified) throw new PayloadError("Email already verified", 400);
 
     const existedToken = await findTokenByIdentifier(user.email);
