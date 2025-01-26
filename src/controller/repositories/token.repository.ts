@@ -13,12 +13,16 @@ export const createToken = async (
     },
   });
 
-export const findTokenByIdentifier = async (email: string) =>
+export const findTokenByIdentifier = async (email: string):Promise<{ token: string; expiresAt: Date; }> =>
   await db.verificationToken.findFirstOrThrow({
     where: {
       user: {
         email,
       },
+    },
+    select: {
+      token: true,
+      expiresAt: true,
     },
   });
 
@@ -29,5 +33,5 @@ export const deleteAllTokensByIdentifier = async (email: string) => {
         email,
       },
     },
-  })
-}
+  });
+};

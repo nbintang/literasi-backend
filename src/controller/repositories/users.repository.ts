@@ -17,7 +17,7 @@ export const findUsers = async () =>
     },
   });
 
-export const findUserById = async (id: string) : Promise<CreateReturnType> => {
+export const findUserById = async (id: string): Promise<CreateReturnType> => {
   const user = await db.user.findUniqueOrThrow({
     where: { id },
     select: {
@@ -42,7 +42,7 @@ export const findUserById = async (id: string) : Promise<CreateReturnType> => {
     role: user.profile?.role,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
-  } ;
+  };
 };
 export const createUser = async ({ email, password, name }: InputUserProps) => {
   const newUser = await db.user.create({
@@ -61,7 +61,14 @@ export const findUserByEmailWithProfile = async (email: string) => {
 };
 
 export const findEmailWithToken = async (email: string) =>
-  await db.user.findUnique({ where: { email }, include: { token: true } });
+  await db.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      isVerified: true,
+    },
+  });
 
 export const updateUserVerifyStatus = async (id: string, isVerified: boolean) =>
   await db.user.update({
@@ -74,4 +81,9 @@ export const updateUserVerifyStatus = async (id: string, isVerified: boolean) =>
         },
       },
     },
+    select:{
+      id: true,
+      email: true,
+      isVerified: true
+    }
   });

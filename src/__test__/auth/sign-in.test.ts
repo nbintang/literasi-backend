@@ -22,7 +22,7 @@ describe("SignIn Route", () => {
       .send({ email: "test@example.com", password: "password123" });
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("success", true);
+    expect(response.body.success).toBe(true);
     expect(response.body).toHaveProperty("accessToken");
     expect(response.body).toHaveProperty("refreshToken");
     expect(response.body.message).toBe("Welcome!...");
@@ -37,8 +37,8 @@ describe("SignIn Route", () => {
       .send({ email: "wrong@example.com", password: "wrongpassword" });
 
     expect(response.status).toBe(401);
-    expect(response.body).toHaveProperty("success", false);
-    expect(response.body).toHaveProperty("message", "Invalid credentials");
+    expect(response.body.success).toBe(false);
+    expect(response.body.message).toBe("Invalid credentials");
   });
 
   it("Should return 500 on server error", async () => {
@@ -49,7 +49,7 @@ describe("SignIn Route", () => {
       .send({ email: "test@example.com", password: "password123" });
 
     expect(response.status).toBe(500);
-    expect(response.body).toHaveProperty("success", false);
-    expect(response.body).toHaveProperty("message", "Internal Server Error");
+    expect(response.body.success).toBe(false);
+    expect(response.body.message).toBe("Internal Server Error");
   });
 });
