@@ -12,7 +12,7 @@ import {
 import { generateAccessToken, verifyToken } from "@/lib/jwt";
 import { CustomJwtPayload, RequestWithToken } from "@/types";
 import { PayloadError } from "@/helper/error-response";
-import { generateOTps } from "@/helper/otp";
+import { generateOtps } from "@/helper/otp";
 import sendEmail from "@/lib/mail";
 
 export async function signUp(req: Request, res: Response, next: NextFunction) {
@@ -23,7 +23,7 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
     const hashPw = await bcrypt.hash(password, 10);
     const user = await createUser({ email, password: hashPw, name });
     if (!user) throw new PayloadError("Sign up failed", 500);
-    const { otp, expiresAt } = generateOTps();
+    const { otp, expiresAt } = generateOtps();
     const hashOtp = await bcrypt.hash(otp, 10);
     await createToken(hashOtp, user.id.toString(), expiresAt);
 
@@ -147,7 +147,7 @@ export async function resendEmailToken(
     if (!user) throw new PayloadError("User not found", 404);
     if (user.isVerified) throw new PayloadError("Email already verified", 400);
 
-    const { otp, expiresAt } = generateOTps();
+    const { otp, expiresAt } = generateOtps();
 
     await deleteAllTokensByIdentifier(user.email);
 

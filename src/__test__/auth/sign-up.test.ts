@@ -40,7 +40,7 @@ describe("SignUp Route", () => {
       updatedAt: new Date(),
     });
 
-    jest.spyOn(otpHelper, "generateOTps").mockReturnValue({
+    jest.spyOn(otpHelper, "generateOtps").mockReturnValue({
       otp: "123456",
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     });
