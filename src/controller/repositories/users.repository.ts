@@ -1,4 +1,4 @@
-import { InputUserProps } from "@/types";
+import { CreateReturnType, InputUserProps } from "@/types";
 import { db } from "@/lib/db";
 
 export const findUsers = async () =>
@@ -17,7 +17,7 @@ export const findUsers = async () =>
     },
   });
 
-export const findUserById = async (id: string) => {
+export const findUserById = async (id: string) : Promise<CreateReturnType> => {
   const user = await db.user.findUniqueOrThrow({
     where: { id },
     select: {
@@ -42,7 +42,7 @@ export const findUserById = async (id: string) => {
     role: user.profile?.role,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
-  };
+  } ;
 };
 export const createUser = async ({ email, password, name }: InputUserProps) => {
   const newUser = await db.user.create({

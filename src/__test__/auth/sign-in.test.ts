@@ -14,7 +14,7 @@ describe("SignIn Route", () => {
     app = serverApp();
   });
 
-  it("should return 200 and tokens for a valid user", async () => {
+  it("Should return 200 and tokens for a valid user", async () => {
     passport.authenticate = mockValidUser();
 
     const response = await request(app)
@@ -29,7 +29,7 @@ describe("SignIn Route", () => {
     expect(response.headers["set-cookie"][0]).toContain("refreshToken");
   });
 
-  it("should return 401 for invalid user", async () => {
+  it("Should return 401 for invalid user", async () => {
     passport.authenticate = mockInvalidUser();
 
     const response = await request(app)
@@ -41,7 +41,7 @@ describe("SignIn Route", () => {
     expect(response.body).toHaveProperty("message", "Invalid credentials");
   });
 
-  it("should return 500 on server error", async () => {
+  it("Should return 500 on server error", async () => {
     passport.authenticate = mockServerError();
 
     const response = await request(app)
